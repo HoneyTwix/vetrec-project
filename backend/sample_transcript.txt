@@ -1,0 +1,27 @@
+Sample Medical Visit Transcript
+
+Doctor: Good morning, Mrs. Johnson. How are you feeling today?
+
+Patient: I've been having these headaches for the past week, and they're getting worse. I also noticed some dizziness when I stand up quickly.
+
+Doctor: I see. Let me check your blood pressure first. [Checks blood pressure] Your blood pressure is elevated at 160/95. Have you been taking your lisinopril regularly?
+
+Patient: I ran out about a week ago and haven't been able to get to the pharmacy.
+
+Doctor: That explains the elevated blood pressure. I'm going to prescribe a refill of lisinopril 10mg once daily, and I want you to monitor your blood pressure at home. Also, let's schedule some blood work to check your kidney function and cholesterol levels.
+
+Nurse: I'll order the blood work for tomorrow morning, and I'll call in the prescription to your pharmacy.
+
+Doctor: Mrs. Johnson, I want you to return in 2 weeks for a follow-up to check your blood pressure. If it's still elevated, we might need to adjust your medication. Also, please make sure to take your medication at the same time each day.
+
+Patient: Should I be concerned about the headaches?
+
+Doctor: The headaches are likely related to the high blood pressure. Once we get your blood pressure under control, they should improve. But if you experience severe headaches, vision changes, or chest pain, go to the emergency room immediately.
+
+Nurse: I'll schedule your follow-up appointment for 2 weeks from today, and I'll send you home with a blood pressure monitoring log.
+
+Doctor: Perfect. Mrs. Johnson, any other concerns today?
+
+Patient: No, that's all. Thank you.
+
+Doctor: You're welcome. Take care, and don't forget to pick up your medication today. 
