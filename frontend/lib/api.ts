@@ -79,7 +79,7 @@ export const extractMedicalActions = async (request: TranscriptRequest): Promise
   return response.data;
 };
 
-export const getUserMemory = async (userId: number, limit: number = 5): Promise<MemoryResponse> => {
+export const getUserMemory = async (userId: number, limit = 5): Promise<MemoryResponse> => {
   const response = await api.get<MemoryResponse>(`/memory/${userId}?limit=${limit}`);
   return response.data;
 };

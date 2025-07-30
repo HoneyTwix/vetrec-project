@@ -433,4 +433,134 @@ export async function uploadTranscriptPDF(
     }
     throw new Error('An error occurred during transcript PDF upload');
   }
+}
+
+// Review Extractions API Functions
+export interface UserExtraction {
+  id: number;
+  transcript_id: number;
+  transcript: {
+    id: number;
+    user_id: number;
+    transcript_text: string;
+    notes?: string;
+    created_at: string;
+  };
+  follow_up_tasks: Array<{
+    description: string;
+    priority: 'high' | 'medium' | 'low';
+    due_date?: string;
+    assigned_to?: string;
+  }>;
+  medication_instructions: Array<{
+    medication_name: string;
+    dosage: string;
+    frequency: string;
+    duration?: string;
+    special_instructions?: string;
+  }>;
+  client_reminders: Array<{
+    description: string;
+    reminder_type: string;
+    priority?: 'high' | 'medium' | 'low';
+    due_date?: string;
+  }>;
+  clinician_todos: Array<{
+    description: string;
+    task_type: string;
+    priority?: 'high' | 'medium' | 'low';
+    due_date?: string;
+  }>;
+  custom_extractions?: Record<string, {
+    extracted_data: string;
+    confidence: string;
+    reasoning?: string;
+  }>;
+  evaluation_results?: Record<string, unknown>;
+  confidence_level: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateExtractionRequest {
+  follow_up_tasks: Array<{
+    description: string;
+    priority: 'high' | 'medium' | 'low';
+    due_date?: string;
+    assigned_to?: string;
+  }>;
+  medication_instructions: Array<{
+    medication_name: string;
+    dosage: string;
+    frequency: string;
+    duration?: string;
+    special_instructions?: string;
+  }>;
+  client_reminders: Array<{
+    description: string;
+    reminder_type: string;
+    priority?: 'high' | 'medium' | 'low';
+    due_date?: string;
+  }>;
+  clinician_todos: Array<{
+    description: string;
+    task_type: string;
+    priority?: 'high' | 'medium' | 'low';
+    due_date?: string;
+  }>;
+  custom_extractions?: Record<string, {
+    extracted_data: string;
+    confidence: string;
+    reasoning?: string;
+  }>;
+}
+
+export async function getUserExtractions(userId: string): Promise<UserExtraction[]> {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/v1/extractions/${userId}`);
+    return response.data as UserExtraction[];
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorData = error.response?.data as { detail?: string } | undefined;
+      const errorMessage = errorData?.detail;
+      throw new Error(errorMessage ?? error.message);
+    }
+    throw new Error('An error occurred while fetching extractions');
+  }
+}
+
+export async function updateExtraction(
+  userId: string,
+  extractionId: number,
+  extractionData: UpdateExtractionRequest
+): Promise<UserExtraction> {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/api/v1/extractions/${userId}/${extractionId}`, extractionData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data as UserExtraction;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorData = error.response?.data as { detail?: string } | undefined;
+      const errorMessage = errorData?.detail;
+      throw new Error(errorMessage ?? error.message);
+    }
+    throw new Error('An error occurred while updating extraction');
+  }
+}
+
+export async function deleteExtraction(userId: string, extractionId: number): Promise<{ message: string }> {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/api/v1/extractions/${userId}/${extractionId}`);
+    return response.data as { message: string };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorData = error.response?.data as { detail?: string } | undefined;
+      const errorMessage = errorData?.detail;
+      throw new Error(errorMessage ?? error.message);
+    }
+    throw new Error('An error occurred while deleting extraction');
+  }
 } 

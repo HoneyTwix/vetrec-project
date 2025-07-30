@@ -1,4 +1,9 @@
 import hashlib
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def clerk_id_to_int(clerk_id: str) -> int:
     """
@@ -15,20 +20,27 @@ def clerk_id_to_int(clerk_id: str) -> int:
     
     return integer_id
 
-def get_or_create_user_id(clerk_id: str, db_session) -> int:
+async def get_or_create_user_id(clerk_id: str, db_session) -> int:
     """
     Get existing user ID or create a new user record for the Clerk ID.
     Returns the integer user ID.
     """
     from db.models import User
+    from sqlalchemy import select
     
     # Convert Clerk ID to integer
     user_id = clerk_id_to_int(clerk_id)
     
-    # Check if user already exists
-    existing_user = db_session.query(User).filter(User.id == user_id).first()
+    logger.info(f"Checking if user exists in database - Clerk ID: {clerk_id[:8]}..., DB User ID: {user_id}")
     
-    if not existing_user:
+    # Check if user already exists
+    result = await db_session.execute(select(User).where(User.id == user_id))
+    existing_user = result.scalar_one_or_none()
+    
+    if existing_user:
+        logger.info(f"✅ User found in database - DB User ID: {user_id}, Name: {existing_user.name}")
+    else:
+        logger.info(f"❌ User not found in database - Creating new user - DB User ID: {user_id}")
         # Create new user record
         new_user = User(
             id=user_id,
@@ -36,6 +48,7 @@ def get_or_create_user_id(clerk_id: str, db_session) -> int:
             name=f"User {clerk_id[:8]}"  # Placeholder name
         )
         db_session.add(new_user)
-        db_session.commit()
+        await db_session.commit()
+        logger.info(f"✅ New user created successfully - DB User ID: {user_id}, Name: {new_user.name}")
     
     return user_id 

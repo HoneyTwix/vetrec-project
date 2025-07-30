@@ -13,6 +13,12 @@ try:
 except ImportError:
     from .embedding_cache import embedding_cache
 
+# Import reranker service
+try:
+    from .reranker_service import reranker_service
+except ImportError:
+    reranker_service = None
+
 class MedicalEmbeddingService:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         """
@@ -40,6 +46,13 @@ class MedicalEmbeddingService:
             name="medical_extractions", 
             metadata={"description": "Medical extraction results with embeddings"}
         )
+        
+        # Check if reranker is available
+        self.has_reranker = reranker_service is not None and reranker_service.model is not None
+        if self.has_reranker:
+            print("✓ Reranker service available for improved retrieval")
+        else:
+            print("⚠️ Reranker service not available - using basic retrieval")
     
     def _normalize_text(self, text: str) -> str:
         """
@@ -575,6 +588,147 @@ class MedicalEmbeddingService:
         # Sort by similarity score (highest first) and limit results
         similar_transcripts.sort(key=lambda x: x["similarity_score"], reverse=True)
         return similar_transcripts[:limit]
+
+    def find_similar_transcripts_with_reranker(self, query_text: str, user_id: int, limit: int = 5, 
+                                             similarity_threshold: float = 0.6, 
+                                             use_reranker: bool = True) -> List[Dict[str, Any]]:
+        """
+        Find similar transcripts using semantic search with optional reranking
+        
+        Args:
+            query_text: The query text
+            user_id: User ID to filter results
+            limit: Maximum number of results
+            similarity_threshold: Minimum similarity score for initial retrieval
+            use_reranker: Whether to use reranker for improved results
+            
+        Returns:
+            List of similar transcripts with metadata and reranker scores
+        """
+        # First, get initial candidates with lower threshold to give reranker more options
+        initial_candidates = self.find_similar_transcripts_optimized(
+            query_text, user_id, limit * 3, similarity_threshold
+        )
+        
+        if not initial_candidates:
+            return []
+        
+        # Use reranker if available and requested
+        if use_reranker and self.has_reranker:
+            try:
+                reranked_candidates = reranker_service.rerank_transcripts(
+                    query_text, initial_candidates, limit
+                )
+                print(f"✓ Reranked {len(initial_candidates)} candidates to {len(reranked_candidates)} results")
+                return reranked_candidates
+            except Exception as e:
+                print(f"⚠️ Reranker failed, falling back to basic retrieval: {e}")
+                return initial_candidates[:limit]
+        else:
+            return initial_candidates[:limit]
+
+    def find_similar_extractions_with_reranker(self, query_text: str, user_id: int, limit: int = 5, 
+                                             similarity_threshold: float = 0.6, 
+                                             use_reranker: bool = True) -> List[Dict[str, Any]]:
+        """
+        Find similar extractions using semantic search with optional reranking
+        
+        Args:
+            query_text: The query text
+            user_id: User ID to filter results
+            limit: Maximum number of results
+            similarity_threshold: Minimum similarity score for initial retrieval
+            use_reranker: Whether to use reranker for improved results
+            
+        Returns:
+            List of similar extractions with metadata and reranker scores
+        """
+        # First, get initial candidates with lower threshold
+        initial_candidates = self.find_similar_extractions(query_text, user_id, limit * 3, similarity_threshold)
+        
+        if not initial_candidates:
+            return []
+        
+        # Use reranker if available and requested
+        if use_reranker and self.has_reranker:
+            try:
+                reranked_candidates = reranker_service.rerank_extractions(
+                    query_text, initial_candidates, limit
+                )
+                print(f"✓ Reranked {len(initial_candidates)} extraction candidates to {len(reranked_candidates)} results")
+                return reranked_candidates
+            except Exception as e:
+                print(f"⚠️ Reranker failed, falling back to basic retrieval: {e}")
+                return initial_candidates[:limit]
+        else:
+            return initial_candidates[:limit]
+
+    def hybrid_search_with_reranker(self, query_text: str, user_id: int, 
+                                  transcript_limit: int = 3, extraction_limit: int = 2,
+                                  similarity_threshold: float = 0.6,
+                                  use_reranker: bool = True) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Hybrid search combining transcript and extraction search with reranking
+        
+        Args:
+            query_text: The query text
+            user_id: User ID to filter results
+            transcript_limit: Maximum number of transcript results
+            extraction_limit: Maximum number of extraction results
+            similarity_threshold: Minimum similarity score for initial retrieval
+            use_reranker: Whether to use reranker for improved results
+            
+        Returns:
+            Dictionary with 'transcripts' and 'extractions' lists
+        """
+        # Get initial candidates
+        transcript_candidates = self.find_similar_transcripts_optimized(
+            query_text, user_id, transcript_limit * 3, similarity_threshold
+        )
+        
+        extraction_candidates = self.find_similar_extractions(
+            query_text, user_id, extraction_limit * 3, similarity_threshold
+        )
+        
+        # Use hybrid reranking if available
+        if use_reranker and self.has_reranker:
+            try:
+                reranked_transcripts, reranked_extractions = reranker_service.hybrid_rerank(
+                    query_text, transcript_candidates, extraction_candidates,
+                    top_k=max(transcript_limit, extraction_limit)
+                )
+                
+                print(f"✓ Hybrid reranked: {len(transcript_candidates)} transcripts, {len(extraction_candidates)} extractions")
+                
+                return {
+                    "transcripts": reranked_transcripts[:transcript_limit],
+                    "extractions": reranked_extractions[:extraction_limit]
+                }
+            except Exception as e:
+                print(f"⚠️ Hybrid reranker failed, falling back to basic retrieval: {e}")
+                return {
+                    "transcripts": transcript_candidates[:transcript_limit],
+                    "extractions": extraction_candidates[:extraction_limit]
+                }
+        else:
+            return {
+                "transcripts": transcript_candidates[:transcript_limit],
+                "extractions": extraction_candidates[:extraction_limit]
+            }
+
+    def get_retrieval_stats(self) -> Dict[str, Any]:
+        """Get statistics about the embedding service and reranker"""
+        stats = {
+            "embedding_model": self.model.get_sentence_embedding_dimension(),
+            "has_reranker": self.has_reranker,
+            "transcript_collection_count": self.transcript_collection.count(),
+            "extraction_collection_count": self.extraction_collection.count()
+        }
+        
+        if self.has_reranker:
+            stats.update(reranker_service.get_reranker_info())
+        
+        return stats
 
 # Global instance
 embedding_service = MedicalEmbeddingService() 

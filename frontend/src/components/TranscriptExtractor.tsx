@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { extractWithCustomCategories, saveFlaggedResponse, uploadTranscriptPDF, type ExtractRequest, type ExtractionResponse, type CustomCategory, type FlaggedResponseRequest, type UserInfo } from '@/lib/api';
-import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit } from 'lucide-react';
+import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit, History } from 'lucide-react';
 import SOPManager from './SOPManager';
 
 export default function TranscriptExtractor() {
   const { user } = useUser();
+  const router = useRouter();
   const [transcriptText, setTranscriptText] = useState('');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -416,13 +418,25 @@ export default function TranscriptExtractor() {
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
-            Extract Medical Actions
-          </CardTitle>
-          <CardDescription>
-            Enter medical visit transcript text to extract actionable items, medications, and follow-up tasks
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                Extract Medical Actions
+              </CardTitle>
+              <CardDescription>
+                Enter medical visit transcript text to extract actionable items, medications, and follow-up tasks
+              </CardDescription>
+            </div>
+            <Button
+              onClick={() => router.push('/review_extractions')}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <History className="w-4 h-4" />
+              Review Extractions
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

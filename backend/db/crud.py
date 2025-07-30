@@ -41,7 +41,8 @@ def create_extraction_result(db: Session, transcript_id: int, extraction_data: d
         client_reminders=extraction_data.get("client_reminders", []),
         clinician_todos=extraction_data.get("clinician_todos", []),
         custom_extractions=extraction_data.get("custom_extractions"),
-        evaluation_results=extraction_data.get("evaluation_results")
+        evaluation_results=extraction_data.get("evaluation_results"),
+        confidence_level=extraction_data.get("confidence_level")
     )
     db.add(db_extraction)
     db.commit()

@@ -149,8 +149,9 @@ For each custom category, extract relevant information based on the field type:
 - If a patient is to do something, assign to "client".
 - If an action fits multiple categories, include it in all relevant categories.
 - Be specific in descriptions; avoid vague terms like "Podiatry referral"—prefer "Schedule podiatry referral".    
-- Only extract items that are explicitly mentioned or clearly implied. Do not invent information.
-- Use the previous visit context if provided to maintain continuity in care.
+- **CRITICAL: Only extract items that are explicitly mentioned or clearly implied in the CURRENT transcript. Do not invent information or copy data from example cases.**
+- **CRITICAL: The transcript data is the SOURCE OF TRUTH. Example cases and previous visits are only for structural guidance.**
+- Use the previous visit context if provided to maintain continuity in care, but prioritize current transcript data.
 - Format all dates as YYYY-MM-DD or relative dates (e.g., "in 2 weeks", "next month").
 - For custom categories, extract only information that is explicitly mentioned in the transcript.
 {% if sops %}
@@ -221,7 +222,23 @@ Custom Categories Examples:
 
 ---
 
-**Use the relevant example cases and previous visits provided in the context to guide your extraction.**
+**CRITICAL DATA PRIORITY RULE:**
+The transcript data ALWAYS takes precedence over any example cases or previous visits. Use the example cases and previous visits ONLY as structural guidelines and formatting examples. 
+
+**DO NOT** copy specific data (dates, times, medications, dosages, etc.) from example cases or previous visits unless that exact same information appears in the current transcript.
+
+**Examples of what NOT to do:**
+- If an example case shows "due in 3 weeks" but the transcript says "due in 2 weeks", use "2 weeks" from the transcript
+- If an example case shows "metformin 1000mg" but the transcript says "metformin 500mg", use "500mg" from the transcript  
+- If an example case shows "high priority" but the transcript doesn't specify priority, don't assume "high priority"
+
+**Examples of what TO do:**
+- Use example cases to understand the structure and format of the data
+- Use example cases to understand what types of information to look for
+- Use example cases to understand how to categorize different types of tasks
+- Extract ONLY the specific information mentioned in the current transcript
+
+**Use the relevant example cases and previous visits provided in the context to guide your extraction STRUCTURE and FORMAT, but extract ONLY the specific data from the current transcript.**
 
 {% if sops %}
 **CRITICAL REMINDER:** Ensure all extractions comply with the clinic SOPs and policies provided above. These policies take precedence over general medical practices and should guide your extraction decisions.

@@ -221,7 +221,7 @@ class SmartContextSelector:
         return selected_candidates
     
     def build_memory_context(self, query_text: str, selected_candidates: List[ContextCandidate]) -> str:
-        """Build memory context from selected candidates"""
+        """Build memory context from selected candidates (transcript only)"""
         if not selected_candidates:
             return ""
         
@@ -245,6 +245,89 @@ class SmartContextSelector:
             for i, candidate in enumerate(user_transcripts[:3]):  # Limit to 3
                 memory_parts.append(f"Previous Visit {i+1} (Transcript ID: {candidate.transcript_id}):")
                 memory_parts.append(candidate.text[:500] + "..." if len(candidate.text) > 500 else candidate.text)
+                memory_parts.append("")
+        
+        return "\n".join(memory_parts)
+    
+    def build_memory_context_with_extractions(self, query_text: str, selected_candidates: List[ContextCandidate]) -> str:
+        """Build memory context from selected candidates including their extractions"""
+        if not selected_candidates:
+            return ""
+        
+        memory_parts = []
+        
+        # Separate test cases and user transcripts
+        test_cases = [c for c in selected_candidates if c.user_id == 999]
+        user_transcripts = [c for c in selected_candidates if c.user_id != 999]
+        
+        # Add test cases first (for few-shot learning)
+        if test_cases:
+            memory_parts.append("RELEVANT EXAMPLE CASES:")
+            for i, candidate in enumerate(test_cases[:3]):  # Limit to 3
+                memory_parts.append(f"Example Case {i+1}:")
+                memory_parts.append("TRANSCRIPT:")
+                memory_parts.append(candidate.text[:500] + "..." if len(candidate.text) > 500 else candidate.text)
+                
+                # Add extraction if available
+                if candidate.extraction_data:
+                    memory_parts.append("EXTRACTIONS:")
+                    extraction_data = candidate.extraction_data
+                    
+                    if extraction_data.get("follow_up_tasks"):
+                        memory_parts.append("Follow-up Tasks:")
+                        for task in extraction_data["follow_up_tasks"][:2]:  # Limit to 2 tasks
+                            memory_parts.append(f"  - {task.get('description', 'N/A')} (Priority: {task.get('priority', 'N/A')})")
+                    
+                    if extraction_data.get("medication_instructions"):
+                        memory_parts.append("Medication Instructions:")
+                        for med in extraction_data["medication_instructions"][:2]:  # Limit to 2 medications
+                            memory_parts.append(f"  - {med.get('medication_name', 'N/A')} {med.get('dosage', 'N/A')} {med.get('frequency', 'N/A')}")
+                    
+                    if extraction_data.get("client_reminders"):
+                        memory_parts.append("Client Reminders:")
+                        for reminder in extraction_data["client_reminders"][:2]:  # Limit to 2 reminders
+                            memory_parts.append(f"  - {reminder.get('description', 'N/A')} ({reminder.get('reminder_type', 'N/A')})")
+                    
+                    if extraction_data.get("clinician_todos"):
+                        memory_parts.append("Clinician To-Dos:")
+                        for todo in extraction_data["clinician_todos"][:2]:  # Limit to 2 todos
+                            memory_parts.append(f"  - {todo.get('description', 'N/A')} ({todo.get('task_type', 'N/A')})")
+                
+                memory_parts.append("")
+        
+        # Add previous visits
+        if user_transcripts:
+            memory_parts.append("PREVIOUS VISITS:")
+            for i, candidate in enumerate(user_transcripts[:3]):  # Limit to 3
+                memory_parts.append(f"Previous Visit {i+1} (Transcript ID: {candidate.transcript_id}):")
+                memory_parts.append("TRANSCRIPT:")
+                memory_parts.append(candidate.text[:500] + "..." if len(candidate.text) > 500 else candidate.text)
+                
+                # Add extraction if available
+                if candidate.extraction_data:
+                    memory_parts.append("EXTRACTIONS:")
+                    extraction_data = candidate.extraction_data
+                    
+                    if extraction_data.get("follow_up_tasks"):
+                        memory_parts.append("Follow-up Tasks:")
+                        for task in extraction_data["follow_up_tasks"][:2]:  # Limit to 2 tasks
+                            memory_parts.append(f"  - {task.get('description', 'N/A')} (Priority: {task.get('priority', 'N/A')})")
+                    
+                    if extraction_data.get("medication_instructions"):
+                        memory_parts.append("Medication Instructions:")
+                        for med in extraction_data["medication_instructions"][:2]:  # Limit to 2 medications
+                            memory_parts.append(f"  - {med.get('medication_name', 'N/A')} {med.get('dosage', 'N/A')} {med.get('frequency', 'N/A')}")
+                    
+                    if extraction_data.get("client_reminders"):
+                        memory_parts.append("Client Reminders:")
+                        for reminder in extraction_data["client_reminders"][:2]:  # Limit to 2 reminders
+                            memory_parts.append(f"  - {reminder.get('description', 'N/A')} ({reminder.get('reminder_type', 'N/A')})")
+                    
+                    if extraction_data.get("clinician_todos"):
+                        memory_parts.append("Clinician To-Dos:")
+                        for todo in extraction_data["clinician_todos"][:2]:  # Limit to 2 todos
+                            memory_parts.append(f"  - {todo.get('description', 'N/A')} ({todo.get('task_type', 'N/A')})")
+                
                 memory_parts.append("")
         
         return "\n".join(memory_parts)

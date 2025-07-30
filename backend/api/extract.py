@@ -292,43 +292,70 @@ async def extract_medical_actions(
         
         performance_monitor.end_operation("phase_2_context_gathering")
         
-        # PARALLEL PHASE 3: Smart context selection
-        print("Phase 3: Smart context selection")
-        performance_monitor.start_operation("phase_3_smart_context_selection")
+        # PARALLEL PHASE 3: Reranked context selection
+        print("Phase 3: Reranked context selection")
+        performance_monitor.start_operation("phase_3_context_selection")
         
         previous_visits_context = ""
         if request.user_id:
             try:
-                # Run similarity searches in parallel
-                similar_transcripts = await _parallel_similarity_searches(request.transcript_text, request.user_id)
+                # Use reranked similarity search for context selection
+                print("Using reranked similarity search for context selection")
+                similar_transcripts = embedding_service.find_similar_transcripts_with_reranker(
+                    request.transcript_text, 
+                    request.user_id, 
+                    limit=5,  # Get top 5 candidates
+                    similarity_threshold=0.3,  # Lower threshold to give reranker more options
+                    use_reranker=True
+                )
                 
-                # Convert to context candidates for smart selection
-                context_candidates = []
-                for similar_transcript in similar_transcripts:
-                    candidate = ContextCandidate(
-                        transcript_id=similar_transcript['transcript_id'],
-                        text=similar_transcript['text'],
-                        similarity_score=similar_transcript['similarity_score'],
-                        user_id=similar_transcript.get('metadata', {}).get('user_id', 0),
-                        metadata=similar_transcript.get('metadata')
-                    )
-                    context_candidates.append(candidate)
-                
-                # Use smart context selector to choose optimal context
-                if context_candidates:
-                    selected_candidates = smart_context_selector.select_optimal_context(
+                # Convert reranked results to ContextCandidate objects and fetch their extractions
+                if similar_transcripts:
+                    context_candidates = []
+                    for similar_transcript in similar_transcripts:
+                        # Fetch the extraction for this transcript
+                        from sqlalchemy import select
+                        result = await db.execute(
+                            select(models.ExtractionResult).where(
+                                models.ExtractionResult.transcript_id == similar_transcript['transcript_id']
+                            )
+                        )
+                        extraction_result = result.scalar_one_or_none()
+                        
+                        # Convert extraction to dict format if it exists
+                        extraction_data = None
+                        if extraction_result:
+                            extraction_data = {
+                                "follow_up_tasks": extraction_result.follow_up_tasks or [],
+                                "medication_instructions": extraction_result.medication_instructions or [],
+                                "client_reminders": extraction_result.client_reminders or [],
+                                "clinician_todos": extraction_result.clinician_todos or [],
+                                "custom_extractions": extraction_result.custom_extractions or {}
+                            }
+                        
+                        candidate = ContextCandidate(
+                            transcript_id=similar_transcript['transcript_id'],
+                            text=similar_transcript['text'],
+                            similarity_score=similar_transcript.get('combined_score', similar_transcript.get('similarity_score', 0.0)),
+                            user_id=similar_transcript.get('metadata', {}).get('user_id', 0),
+                            extraction_data=extraction_data,  # Include extraction data
+                            metadata=similar_transcript.get('metadata')
+                        )
+                        context_candidates.append(candidate)
+                    
+                    # Use smart context selector to build memory context with extractions
+                    previous_visits_context = smart_context_selector.build_memory_context_with_extractions(
                         request.transcript_text, 
                         context_candidates
                     )
                     
-                    # Build memory context using smart selector
-                    previous_visits_context = smart_context_selector.build_memory_context(
-                        request.transcript_text, 
-                        selected_candidates
-                    )
+                    print(f"✓ Reranked context selection: {len(similar_transcripts)} candidates used")
+                    print(f"✓ Built memory context with reranking")
                     
-                    print(f"✓ Smart context selection: {len(selected_candidates)}/{len(context_candidates)} candidates selected")
-                    print(f"✓ Built optimized memory context")
+                    # Log reranking statistics
+                    if similar_transcripts and 'reranker_score' in similar_transcripts[0]:
+                        avg_reranker_score = sum(t.get('reranker_score', 0) for t in similar_transcripts[:5]) / min(5, len(similar_transcripts))
+                        print(f"✓ Average reranker score: {avg_reranker_score:.3f}")
                 else:
                     print("⚠️ No similar transcripts found for memory context")
                     
@@ -338,7 +365,7 @@ async def extract_medical_actions(
                 
         print("previous_visits_context", previous_visits_context)
         
-        performance_monitor.end_operation("phase_3_smart_context_selection")
+        performance_monitor.end_operation("phase_3_context_selection")
         
         # Call BAML to extract actions using the correct syntax
         performance_monitor.start_operation("baml_extraction")
@@ -370,26 +397,31 @@ async def extract_medical_actions(
         performance_monitor.start_operation("evaluation_phase")
         
         try:
-            # Step 1: Find similar transcripts first (this is the key improvement)
+            # Step 1: Find similar transcripts first using reranked search
             # Search for both test case transcripts and user's own previous transcripts
             similar_transcripts = []
             
-            # First, search test case transcripts (user_id 999)
-            test_case_transcripts = embedding_service.find_similar_transcripts(
+            # First, search test case transcripts (user_id 999) with reranking
+            print("Searching test case transcripts with reranking...")
+            test_case_transcripts = embedding_service.find_similar_transcripts_with_reranker(
                 request.transcript_text,
                 999,  # Test cases
                 10,
-                0.3  # Very low threshold to catch exact matches
+                0.3,  # Very low threshold to catch exact matches
+                use_reranker=True
             )
             similar_transcripts.extend(test_case_transcripts)
             
             # Then, search user's own previous transcripts if user_id is provided
+            user_transcripts = []
             if request.user_id and request.user_id != 999:
-                user_transcripts = embedding_service.find_similar_transcripts(
+                print("Searching user transcripts with reranking...")
+                user_transcripts = embedding_service.find_similar_transcripts_with_reranker(
                     request.transcript_text,
                     request.user_id,  # User's own transcripts
                     10,
-                    0.3  # Very low threshold to catch exact matches
+                    0.3,  # Very low threshold to catch exact matches
+                    use_reranker=True
                 )
                 similar_transcripts.extend(user_transcripts)
                 print(f"Found {len(user_transcripts)} similar user transcripts")
@@ -1153,6 +1185,176 @@ async def save_flagged_response(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save flagged response: {str(e)}")
 
+# Review Extractions API Endpoints
+@router.get("/extractions/{user_id}")
+async def get_user_extractions(
+    user_id: str,
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Get all extractions for a user with their associated transcripts
+    """
+    try:
+        # Convert Clerk user ID to database user ID
+        from utils.user_id_converter import get_or_create_user_id
+        db_user_id = await get_or_create_user_id(user_id, db)
+        
+        # Get all transcripts for the user with their extractions
+        from sqlalchemy import select
+        from db import models
+        
+        # Query transcripts with extractions
+        result = await db.execute(
+            select(models.VisitTranscript, models.ExtractionResult)
+            .outerjoin(models.ExtractionResult, models.VisitTranscript.id == models.ExtractionResult.transcript_id)
+            .where(models.VisitTranscript.user_id == db_user_id)
+            .order_by(models.VisitTranscript.created_at.desc())
+        )
+        
+        rows = result.all()    
+        
+        extractions = []
+        for row in rows:
+            transcript, extraction = row
+            if extraction:  # Only include transcripts that have extractions
+                extractions.append({
+                    "id": extraction.id,
+                    "transcript_id": transcript.id,
+                    "transcript": {
+                        "id": transcript.id,
+                        "user_id": transcript.user_id,
+                        "transcript_text": transcript.transcript_text,
+                        "notes": transcript.notes,
+                        "created_at": transcript.created_at.isoformat() if transcript.created_at else ""
+                    },
+                    "follow_up_tasks": extraction.follow_up_tasks or [],
+                    "medication_instructions": extraction.medication_instructions or [],
+                    "client_reminders": extraction.client_reminders or [],
+                    "clinician_todos": extraction.clinician_todos or [],
+                    "custom_extractions": extraction.custom_extractions or {},
+                    "evaluation_results": extraction.evaluation_results or {},
+                    "confidence_level": extraction.confidence_level,
+                    "created_at": extraction.created_at.isoformat() if extraction.created_at else "",
+                    "updated_at": extraction.updated_at.isoformat() if extraction.updated_at else ""
+                })
+        
+        return extractions
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve extractions: {str(e)}")
+
+@router.put("/extractions/{user_id}/{extraction_id}")
+async def update_user_extraction(
+    user_id: str,
+    extraction_id: int,
+    extraction_data: dict,
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Update an existing extraction for a user
+    """
+    try:
+        # Convert Clerk user ID to database user ID
+        from utils.user_id_converter import get_or_create_user_id
+        db_user_id = await get_or_create_user_id(user_id, db)
+        
+        # Get the extraction and verify ownership
+        from sqlalchemy import select
+        from db import models
+        
+        result = await db.execute(
+            select(models.ExtractionResult, models.VisitTranscript)
+            .join(models.VisitTranscript, models.ExtractionResult.transcript_id == models.VisitTranscript.id)
+            .where(models.ExtractionResult.id == extraction_id)
+            .where(models.VisitTranscript.user_id == db_user_id)
+        )
+        
+        row = result.first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Extraction not found")
+        
+        extraction, transcript = row
+        
+        # Update the extraction
+        extraction.follow_up_tasks = extraction_data.get("follow_up_tasks", [])
+        extraction.medication_instructions = extraction_data.get("medication_instructions", [])
+        extraction.client_reminders = extraction_data.get("client_reminders", [])
+        extraction.clinician_todos = extraction_data.get("clinician_todos", [])
+        extraction.custom_extractions = extraction_data.get("custom_extractions", {})
+        extraction.updated_at = datetime.utcnow()
+        
+        await db.commit()
+        await db.refresh(extraction)
+        
+        # Return updated extraction
+        return {
+            "id": extraction.id,
+            "transcript_id": transcript.id,
+            "transcript": {
+                "id": transcript.id,
+                "user_id": transcript.user_id,
+                "transcript_text": transcript.transcript_text,
+                "notes": transcript.notes,
+                "created_at": transcript.created_at.isoformat()
+            },
+            "follow_up_tasks": extraction.follow_up_tasks or [],
+            "medication_instructions": extraction.medication_instructions or [],
+            "client_reminders": extraction.client_reminders or [],
+            "clinician_todos": extraction.clinician_todos or [],
+            "custom_extractions": extraction.custom_extractions or {},
+            "evaluation_results": extraction.evaluation_results or {},
+            "confidence_level": extraction.confidence_level,
+            "created_at": extraction.created_at.isoformat(),
+            "updated_at": extraction.updated_at.isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update extraction: {str(e)}")
+
+@router.delete("/extractions/{user_id}/{extraction_id}")
+async def delete_user_extraction(
+    user_id: str,
+    extraction_id: int,
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Delete an extraction for a user
+    """
+    try:
+        # Convert Clerk user ID to database user ID
+        from utils.user_id_converter import get_or_create_user_id
+        db_user_id = await get_or_create_user_id(user_id, db)
+        
+        # Get the extraction and verify ownership
+        from sqlalchemy import select
+        from db import models
+        
+        result = await db.execute(
+            select(models.ExtractionResult, models.VisitTranscript)
+            .join(models.VisitTranscript, models.ExtractionResult.transcript_id == models.VisitTranscript.id)
+            .where(models.ExtractionResult.id == extraction_id)
+            .where(models.VisitTranscript.user_id == db_user_id)
+        )
+        
+        row = result.first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Extraction not found")
+        
+        extraction, transcript = row
+        
+        # Delete the extraction
+        await db.delete(extraction)
+        await db.commit()
+        
+        return {"message": "Extraction deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete extraction: {str(e)}")
+
 @router.post("/transcript/upload-pdf")
 async def upload_transcript_pdf(
     file: UploadFile = File(...)
@@ -1191,6 +1393,69 @@ async def upload_transcript_pdf(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
+
+@router.get("/retrieval/stats")
+async def get_retrieval_statistics():
+    """
+    Get statistics about the embedding service and reranker
+    """
+    try:
+        stats = embedding_service.get_retrieval_stats()
+        return {
+            "embedding_service": stats,
+            "message": "Retrieval statistics retrieved successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get retrieval statistics: {str(e)}")
+
+@router.post("/retrieval/test-reranker")
+async def test_reranker(
+    request: dict
+):
+    """
+    Test the reranker with a sample query
+    """
+    try:
+        query = request.get("query", "")
+        user_id = request.get("user_id", 999)  # Default to test cases
+        limit = request.get("limit", 5)
+        use_reranker = request.get("use_reranker", True)
+        
+        if not query:
+            raise HTTPException(status_code=400, detail="Query is required")
+        
+        # Test basic retrieval
+        basic_results = embedding_service.find_similar_transcripts_optimized(
+            query, user_id, limit, 0.3
+        )
+        
+        # Test reranked retrieval
+        reranked_results = embedding_service.find_similar_transcripts_with_reranker(
+            query, user_id, limit, 0.3, use_reranker
+        )
+        
+        return {
+            "query": query,
+            "user_id": user_id,
+            "basic_results": {
+                "count": len(basic_results),
+                "results": basic_results[:3]  # Show first 3 for comparison
+            },
+            "reranked_results": {
+                "count": len(reranked_results),
+                "results": reranked_results[:3]  # Show first 3 for comparison
+            },
+            "reranker_enabled": use_reranker,
+            "improvement": {
+                "basic_avg_score": sum(r.get("similarity_score", 0) for r in basic_results[:3]) / max(1, len(basic_results[:3])),
+                "reranked_avg_score": sum(r.get("combined_score", 0) for r in reranked_results[:3]) / max(1, len(reranked_results[:3]))
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to test reranker: {str(e)}")
 
 # Cleanup function for thread pool
 def cleanup_thread_pool():

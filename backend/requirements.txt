@@ -12,8 +12,10 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-dotenv>=1.0.0
 baml>=0.1.0
-baml-py
+baml-py>=0.202.1
 PyPDF2==3.0.1
 pdfplumber>=0.10.3
 PyMuPDF
 greenlet
+torch>=2.0.0
+transformers>=4.30.0
