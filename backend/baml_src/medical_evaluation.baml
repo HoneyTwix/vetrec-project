@@ -205,6 +205,13 @@ Please evaluate the predicted extraction against the ORIGINAL TRANSCRIPT and pro
 4. Overall reasoning explaining the evaluation based on TRANSCRIPT accuracy
 5. Confidence level in your assessment based on TRANSCRIPT accuracy
 
+**CRITICAL CONFIDENCE LEVEL REQUIREMENTS:**
+- **MUST** return exactly one of: "high", "medium", or "low"
+- **NEVER** return "no evaluation", "none", "unknown", or any other value
+- **High confidence**: Clear, unambiguous extraction that accurately represents the transcript
+- **Medium confidence**: Good extraction with some minor uncertainties or ambiguities
+- **Low confidence**: Significant uncertainties, missing information, or unclear extraction
+
 **REMEMBER**: The transcript is the source of truth. Only use the gold standard as a structural guide for formatting and categorization.
 
 {{ ctx.output_format }}
@@ -782,6 +789,13 @@ Please provide:
 4. Flagged sections with indexes of items requiring review
 5. Overall confidence summary and recommendations
 
+**CRITICAL CONFIDENCE LEVEL REQUIREMENTS:**
+- **MUST** return exactly one of: "high", "medium", or "low" for all confidence fields
+- **NEVER** return "no evaluation", "none", "unknown", or any other value
+- **High confidence**: Clear, unambiguous extraction that accurately represents the transcript
+- **Medium confidence**: Good extraction with some minor uncertainties or ambiguities
+- **Low confidence**: Significant uncertainties, missing information, or unclear extraction
+
 **REMEMBER**: Evaluate each item individually against the transcript, not the gold standards.
 
 {{ ctx.output_format }}
@@ -946,6 +960,13 @@ Please provide:
 3. Specific issues and suggestions for flagged items
 4. Flagged sections with indexes of items requiring review
 5. Overall confidence summary and recommendations
+
+**CRITICAL CONFIDENCE LEVEL REQUIREMENTS:**
+- **MUST** return exactly one of: "high", "medium", or "low" for all confidence fields
+- **NEVER** return "no evaluation", "none", "unknown", or any other value
+- **High confidence**: Clear, unambiguous extraction that accurately represents the transcript
+- **Medium confidence**: Good extraction with some minor uncertainties or ambiguities
+- **Low confidence**: Significant uncertainties, missing information, or unclear extraction
 
 **REMEMBER**: Evaluate each item individually against the transcript, not the gold standard.
 

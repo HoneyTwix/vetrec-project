@@ -9,8 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { extractWithCustomCategories, saveFlaggedResponse, uploadTranscriptPDF, type ExtractRequest, type ExtractionResponse, type CustomCategory, type FlaggedResponseRequest, type UserInfo } from '@/lib/api';
-import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit, History, AlertTriangle, Info } from 'lucide-react';
+import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit, History, AlertTriangle, Info, FileDown } from 'lucide-react';
 import SOPManager from './SOPManager';
+import VisitSummaryPDF from './VisitSummaryPDF';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 // Confidence indicator component
 const ConfidenceIndicator = ({ confidence, reasoning, issues, suggestions }: {
@@ -129,6 +131,10 @@ export default function TranscriptExtractor() {
   // PDF transcript upload
   const [uploadingTranscript, setUploadingTranscript] = useState(false);
   const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
+  
+  // PDF generation state
+  const [patientName, setPatientName] = useState('Patient');
+  const [clinicName, setClinicName] = useState('Animal Hospital');
   
   // Editable extraction data for review
   const [editableExtraction, setEditableExtraction] = useState<{
@@ -367,8 +373,8 @@ export default function TranscriptExtractor() {
       // Log the response body
       console.log('📥 API Response Body:', JSON.stringify(response, null, 2));
       
-      // Check if response is flagged for review or confidence is medium/low/no_evaluation
-      const flagged = response.flagged === true || ['medium', 'low', 'no_evaluation'].includes((response.confidence_level ?? '').toLowerCase());
+      // Check if response is flagged for review or confidence is medium/low
+      const flagged = response.flagged === true || ['medium', 'low'].includes((response.confidence_level ?? '').toLowerCase());
       if (flagged) {
         setIsFlagged(true);
         setFlaggedData(response);
@@ -595,6 +601,28 @@ export default function TranscriptExtractor() {
               />
             </div>
 
+            {/* PDF Customization Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="patient-name">Patient Name (for PDF)</Label>
+                <Input
+                  id="patient-name"
+                  placeholder="e.g., Korra Trujillo"
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clinic-name">Clinic Name (for PDF)</Label>
+                <Input
+                  id="clinic-name"
+                  placeholder="e.g., Berthoud Animal Hospital"
+                  value={clinicName}
+                  onChange={(e) => setClinicName(e.target.value)}
+                />
+              </div>
+            </div>
+
             {/* Custom Categories Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -796,10 +824,7 @@ export default function TranscriptExtractor() {
               Flagged for Review
             </CardTitle>
             <CardDescription>
-              {flaggedData.confidence_level === 'no_evaluation' 
-                ? 'This extraction was completed but could not be automatically evaluated. Please review and save manually.'
-                : 'This extraction requires human review before saving'
-              }
+              This extraction requires human review before saving
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -1719,14 +1744,58 @@ export default function TranscriptExtractor() {
               </div>
             )}
 
-            <Button 
-              onClick={downloadResults}
-              variant="outline"
-              className="w-full"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download Results (JSON)
-            </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button 
+                onClick={downloadResults}
+                variant="outline"
+                className="w-full"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Results (JSON)
+              </Button>
+              
+              {result && (
+                <PDFDownloadLink
+                  document={
+                    <VisitSummaryPDF
+                      extraction={{
+                        ...result.extraction,
+                        custom_extractions: result.extraction.custom_extractions ? 
+                          Object.entries(result.extraction.custom_extractions).reduce((acc, [key, value]) => ({
+                            ...acc,
+                            [key]: value as { extracted_data: string; confidence: string; reasoning?: string }
+                          }), {}) : undefined
+                      }}
+                      patientName={patientName}
+                      clinicName={clinicName}
+                      visitDate={new Date().toLocaleDateString()}
+                    />
+                  }
+                  fileName={`${patientName.replace(/\s+/g, '_')}_visit_summary.pdf`}
+                  className="w-full"
+                >
+                  {({ loading }) => (
+                    <Button 
+                      variant="outline"
+                      className="w-full bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 font-medium"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating PDF...
+                        </>
+                      ) : (
+                        <>
+                          <FileDown className="w-4 h-4 mr-2" />
+                          Download Visit Summary (PDF)
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </PDFDownloadLink>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

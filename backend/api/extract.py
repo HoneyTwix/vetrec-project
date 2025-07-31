@@ -65,7 +65,7 @@ async def _parallel_user_lookup(request, db: AsyncSession):
                 return new_user.id
     elif request.user_id and isinstance(request.user_id, str):
         print(f"Converting Clerk ID: {request.user_id} to integer")
-        user_id = get_or_create_user_id(request.user_id, db)
+        user_id = await get_or_create_user_id(request.user_id, db)
         print(f"Converted to user_id: {user_id}")
         return user_id
     return request.user_id
@@ -138,6 +138,16 @@ async def _parallel_embedding_creation(transcript_text, extraction_data, user_id
         print(f"Error in parallel embedding creation: {e}")
         return {}
 
+def _validate_confidence_level(confidence_level: str) -> str:
+    """
+    Validate and normalize confidence level to ensure it's one of the valid values
+    """
+    valid_confidence_levels = {"high", "medium", "low"}
+    if confidence_level not in valid_confidence_levels:
+        print(f"⚠️ Invalid confidence level: '{confidence_level}', defaulting to 'low'")
+        return "low"
+    return confidence_level
+
 def _determine_confidence_level(evaluation_summary: Dict) -> str:
     """
     Determine confidence level based on evaluation results
@@ -158,6 +168,9 @@ def _determine_confidence_level(evaluation_summary: Dict) -> str:
     else:
         overall_score = 0.0
         confidence_level = "low"
+    
+    # Validate confidence level - ensure it's one of the valid values
+    confidence_level = _validate_confidence_level(confidence_level)
     
     # TIER 1: High-confidence numeric override
     # If scores are very high, override LLM's conservative assessment
@@ -476,6 +489,9 @@ async def extract_medical_actions(
             # Sort by similarity score (highest first)
             available_standards.sort(key=lambda x: x["similarity_score"], reverse=True)
             
+            # Initialize confidence_details_dict to None (will be set if evaluation occurs)
+            confidence_details_dict = None
+            
             if available_standards:
                 best_similarity = available_standards[0]["similarity_score"]
                 print(f"Best transcript similarity: {best_similarity:.3f}")
@@ -676,11 +692,14 @@ async def extract_medical_actions(
                         }
                 
                 # Handle confidence details for enhanced evaluation
-                confidence_details_dict = None
                 if "confidence_details" in evaluation_summary:
                     confidence_details = evaluation_summary["confidence_details"]
+                    
+                    # Validate overall confidence level
+                    overall_confidence = _validate_confidence_level(confidence_details.overall_confidence)
+                    
                     confidence_details_dict = {
-                        "overall_confidence": confidence_details.overall_confidence,
+                        "overall_confidence": overall_confidence,
                         "flagged_sections": {
                             "follow_up_tasks": confidence_details.flagged_sections.follow_up_tasks,
                             "medication_instructions": confidence_details.flagged_sections.medication_instructions,
@@ -697,7 +716,7 @@ async def extract_medical_actions(
                                     "due_date": item.due_date,
                                     "assigned_to": item.assigned_to,
                                     "confidence": {
-                                        "confidence": item.confidence.confidence,
+                                        "confidence": _validate_confidence_level(item.confidence.confidence),
                                         "reasoning": item.confidence.reasoning,
                                         "issues": item.confidence.issues,
                                         "suggestions": item.confidence.suggestions
@@ -712,7 +731,7 @@ async def extract_medical_actions(
                                     "duration": item.duration,
                                     "special_instructions": item.special_instructions,
                                     "confidence": {
-                                        "confidence": item.confidence.confidence,
+                                        "confidence": _validate_confidence_level(item.confidence.confidence),
                                         "reasoning": item.confidence.reasoning,
                                         "issues": item.confidence.issues,
                                         "suggestions": item.confidence.suggestions
@@ -726,7 +745,7 @@ async def extract_medical_actions(
                                     "due_date": item.due_date,
                                     "priority": item.priority,
                                     "confidence": {
-                                        "confidence": item.confidence.confidence,
+                                        "confidence": _validate_confidence_level(item.confidence.confidence),
                                         "reasoning": item.confidence.reasoning,
                                         "issues": item.confidence.issues,
                                         "suggestions": item.confidence.suggestions
@@ -741,7 +760,7 @@ async def extract_medical_actions(
                                     "assigned_to": item.assigned_to,
                                     "due_date": item.due_date,
                                     "confidence": {
-                                        "confidence": item.confidence.confidence,
+                                        "confidence": _validate_confidence_level(item.confidence.confidence),
                                         "reasoning": item.confidence.reasoning,
                                         "issues": item.confidence.issues,
                                         "suggestions": item.confidence.suggestions
@@ -775,9 +794,82 @@ async def extract_medical_actions(
                     "strategy": "none",
                     "reasoning": "No similar transcripts found even with minimum thresholds (0.05) - skipping evaluation"
                 }
-                extraction_data["confidence_level"] = "no_evaluation"
+                extraction_data["confidence_level"] = "low"
                 should_save = False
                 review_required = False
+                
+                # Create default confidence_details_dict when no similar transcripts are found
+                confidence_details_dict = {
+                    "overall_confidence": "low",
+                    "flagged_sections": {
+                        "follow_up_tasks": [],
+                        "medication_instructions": [],
+                        "client_reminders": [],
+                        "clinician_todos": [],
+                        "custom_extractions": []
+                    },
+                    "confidence_summary": "No evaluation possible due to lack of similar historical data",
+                    "item_confidence": {
+                        "follow_up_tasks": [
+                            {
+                                "description": item.get("description", ""),
+                                "priority": item.get("priority", ""),
+                                "due_date": item.get("due_date", ""),
+                                "assigned_to": item.get("assigned_to", ""),
+                                "confidence": {
+                                    "confidence": "low",
+                                    "reasoning": "No evaluation possible due to lack of similar historical data",
+                                    "issues": ["No similar transcripts found for comparison"],
+                                    "suggestions": ["Consider manual review of extraction"]
+                                }
+                            } for item in extraction_data.get("follow_up_tasks", [])
+                        ],
+                        "medication_instructions": [
+                            {
+                                "medication_name": item.get("medication_name", ""),
+                                "dosage": item.get("dosage", ""),
+                                "frequency": item.get("frequency", ""),
+                                "duration": item.get("duration", ""),
+                                "special_instructions": item.get("special_instructions", ""),
+                                "confidence": {
+                                    "confidence": "low",
+                                    "reasoning": "No evaluation possible due to lack of similar historical data",
+                                    "issues": ["No similar transcripts found for comparison"],
+                                    "suggestions": ["Consider manual review of extraction"]
+                                }
+                            } for item in extraction_data.get("medication_instructions", [])
+                        ],
+                        "client_reminders": [
+                            {
+                                "reminder_type": item.get("reminder_type", ""),
+                                "description": item.get("description", ""),
+                                "due_date": item.get("due_date", ""),
+                                "priority": item.get("priority", ""),
+                                "confidence": {
+                                    "confidence": "low",
+                                    "reasoning": "No evaluation possible due to lack of similar historical data",
+                                    "issues": ["No similar transcripts found for comparison"],
+                                    "suggestions": ["Consider manual review of extraction"]
+                                }
+                            } for item in extraction_data.get("client_reminders", [])
+                        ],
+                        "clinician_todos": [
+                            {
+                                "task_type": item.get("task_type", ""),
+                                "description": item.get("description", ""),
+                                "priority": item.get("priority", ""),
+                                "assigned_to": item.get("assigned_to", ""),
+                                "due_date": item.get("due_date", ""),
+                                "confidence": {
+                                    "confidence": "low",
+                                    "reasoning": "No evaluation possible due to lack of similar historical data",
+                                    "issues": ["No similar transcripts found for comparison"],
+                                    "suggestions": ["Consider manual review of extraction"]
+                                }
+                            } for item in extraction_data.get("clinician_todos", [])
+                        ]
+                    }
+                }
                 
         except Exception as e:
             print(f"❌ Error in adaptive evaluation: {e}")
@@ -928,42 +1020,7 @@ async def extract_medical_actions(
                     flagged=flagged,
                     confidence_details=confidence_details_dict
                 )
-        elif confidence_level == "no_evaluation":
-            # Convert custom_extractions back to dict format for response
-            response_extraction_data = extraction_data.copy()
-            if "custom_extractions" in response_extraction_data and isinstance(response_extraction_data["custom_extractions"], list):
-                custom_extractions_dict = {}
-                for custom_extraction in response_extraction_data["custom_extractions"]:
-                    custom_extractions_dict[custom_extraction["category_name"]] = {
-                        "extracted_data": custom_extraction["extracted_data"],
-                        "confidence": custom_extraction["confidence"],
-                        "reasoning": custom_extraction.get("reasoning")
-                    }
-                response_extraction_data["custom_extractions"] = custom_extractions_dict
-            
-            no_eval_response = {
-                "transcript": schema.VisitTranscriptResponse.from_orm(transcript),
-                "extraction": {
-                    "id": 0,  # Use 0 instead of None for validation
-                    "transcript_id": transcript.id,
-                    "follow_up_tasks": response_extraction_data.get("follow_up_tasks", []),
-                    "medication_instructions": response_extraction_data.get("medication_instructions", []),
-                    "client_reminders": response_extraction_data.get("client_reminders", []),
-                    "clinician_todos": response_extraction_data.get("clinician_todos", []),
-                    "custom_extractions": response_extraction_data.get("custom_extractions"),
-                    "evaluation_results": response_extraction_data.get("evaluation_results", {}),
-                    "confidence_level": "no_evaluation",
-                    "created_at": datetime.utcnow(),
-                    "flagged": True  # Always flag no_evaluation cases for review
-                },
-                "confidence_level": "no_evaluation",
-                "review_required": True,  # Set to True for no_evaluation cases
-                "evaluation_results": response_extraction_data.get("evaluation_results", {}),
-                "flagged": True,  # Always flag no_evaluation cases for review
-                "message": "Extraction completed but no evaluation possible due to lack of similar test cases. Please review and save manually.",
-                "confidence_details": confidence_details_dict
-            }
-            return no_eval_response
+
         else:
             # Convert custom_extractions back to dict format for response
             response_extraction_data = extraction_data.copy()
@@ -1191,8 +1248,18 @@ async def save_flagged_response(
         extraction_data["confidence_level"] = "reviewed"  # Mark as human-reviewed
         extraction_data["flagged"] = False  # Mark as no longer flagged
         
+        # Filter out invalid fields that don't exist in the ExtractionResult model
+        valid_fields = {
+            "follow_up_tasks", "medication_instructions", "client_reminders", 
+            "clinician_todos", "custom_extractions", "evaluation_results", 
+            "confidence_details", "confidence_level"
+        }
+        
+        # Only keep valid fields for database insertion
+        db_extraction_data = {k: v for k, v in extraction_data.items() if k in valid_fields}
+        
         # Save to database using async operation
-        db_extraction = await create_extraction_result_async(db, request.transcript_id, extraction_data)
+        db_extraction = await create_extraction_result_async(db, request.transcript_id, db_extraction_data)
         
         # Create embeddings in parallel
         try:

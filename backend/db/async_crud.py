@@ -98,35 +98,17 @@ async def create_extraction_result_async(db: AsyncSession, transcript_id: int, e
             clinician_todos=extraction_data.get("clinician_todos", []),
             custom_extractions=extraction_data.get("custom_extractions"),
             evaluation_results=extraction_data.get("evaluation_results"),
-            confidence_level=extraction_data.get("confidence_level", "low")
+            confidence_details=extraction_data.get("confidence_details")
         )
         
-        
         db.add(extraction)
-        
-        await db.commit()  # Commit the transaction
-        
-        await db.refresh(extraction)  # Refresh the object to get the ID
-        
+        await db.commit()
+        await db.refresh(extraction)
         return extraction
         
     except Exception as e:
-        print(f"Error in create_extraction_result_async: {e}")
-        import traceback
-        traceback.print_exc()
-        # Return a fallback object
-        fallback_extraction = models.ExtractionResult(
-            id=0,
-            transcript_id=transcript_id,
-            follow_up_tasks=extraction_data.get("follow_up_tasks", []),
-            medication_instructions=extraction_data.get("medication_instructions", []),
-            client_reminders=extraction_data.get("client_reminders", []),
-            clinician_todos=extraction_data.get("clinician_todos", []),
-            custom_extractions=extraction_data.get("custom_extractions"),
-            evaluation_results=extraction_data.get("evaluation_results"),
-            confidence_level=extraction_data.get("confidence_level", "low")
-        )
-        return fallback_extraction
+        await db.rollback()
+        raise e
 
 async def get_transcript_async(db: AsyncSession, transcript_id: int) -> Optional[models.VisitTranscript]:
     """Get transcript by ID asynchronously"""
@@ -143,7 +125,7 @@ async def get_extraction_result_async(db: AsyncSession, extraction_id: int) -> O
     return result.scalar_one_or_none()
 
 async def batch_get_sops_async(db: AsyncSession, sop_ids: List[int], user_id: int) -> List[models.SOP]:
-    """Batch get SOPs with optimized query"""
+    """Get multiple SOPs by IDs asynchronously"""
     if not sop_ids:
         return []
     
@@ -161,25 +143,135 @@ async def batch_get_sops_async(db: AsyncSession, sop_ids: List[int], user_id: in
     return result.scalars().all()
 
 async def batch_get_user_context_async(db: AsyncSession, user_id: int, limit: int = 5) -> Dict[str, Any]:
-    """Batch get user context (transcripts and extractions) asynchronously"""
-    # Get transcripts with extractions in a single query
-    result = await db.execute(
+    """Get user context asynchronously including recent visits and SOPs"""
+    # Get recent visits
+    visits_result = await db.execute(
         select(models.VisitTranscript)
         .where(models.VisitTranscript.user_id == user_id)
         .order_by(models.VisitTranscript.created_at.desc())
         .limit(limit)
         .options(selectinload(models.VisitTranscript.extraction_result))
     )
-    transcripts = result.scalars().all()
+    recent_visits = visits_result.scalars().all()
     
-    # Get user info
-    user_result = await db.execute(
-        select(models.User).where(models.User.id == user_id)
+    # Get user's active SOPs
+    sops_result = await db.execute(
+        select(models.SOP)
+        .where(
+            and_(
+                models.SOP.user_id == user_id,
+                models.SOP.is_active == True
+            )
+        )
+        .order_by(models.SOP.priority.desc())
     )
-    user = user_result.scalar_one_or_none()
+    active_sops = sops_result.scalars().all()
     
     return {
-        "user": user,
-        "transcripts": transcripts,
-        "extractions": [t.extraction_result for t in transcripts if t.extraction_result]
-    } 
+        "recent_visits": recent_visits,
+        "active_sops": active_sops
+    }
+
+# SOP CRUD functions
+async def create_sop(db: AsyncSession, user_id: int, sop_data: schema.SOPCreate) -> models.SOP:
+    """Create a new SOP asynchronously"""
+    sop = models.SOP(
+        user_id=user_id,
+        title=sop_data.title,
+        description=sop_data.description,
+        content=sop_data.content,
+        category=sop_data.category,
+        tags=sop_data.tags,
+        priority=sop_data.priority,
+        is_active=True
+    )
+    db.add(sop)
+    await db.commit()
+    await db.refresh(sop)
+    return sop
+
+async def get_sop(db: AsyncSession, user_id: int, sop_id: int) -> Optional[models.SOP]:
+    """Get a specific SOP by ID asynchronously"""
+    result = await db.execute(
+        select(models.SOP)
+        .where(
+            and_(
+                models.SOP.id == sop_id,
+                models.SOP.user_id == user_id
+            )
+        )
+    )
+    return result.scalar_one_or_none()
+
+async def get_user_sops(db: AsyncSession, user_id: int, active_only: bool = True) -> List[models.SOP]:
+    """Get all SOPs for a user asynchronously"""
+    query = select(models.SOP).where(models.SOP.user_id == user_id)
+    if active_only:
+        query = query.where(models.SOP.is_active == True)
+    query = query.order_by(models.SOP.priority.desc(), models.SOP.created_at.desc())
+    
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def update_sop(db: AsyncSession, user_id: int, sop_id: int, sop_data: schema.SOPUpdate) -> Optional[models.SOP]:
+    """Update an existing SOP asynchronously"""
+    # Get the SOP first
+    sop = await get_sop(db, user_id, sop_id)
+    if not sop:
+        return None
+    
+    # Update fields
+    update_data = sop_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(sop, field, value)
+    
+    sop.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(sop)
+    return sop
+
+async def delete_sop(db: AsyncSession, user_id: int, sop_id: int) -> bool:
+    """Delete an SOP (soft delete) asynchronously"""
+    sop = await get_sop(db, user_id, sop_id)
+    if not sop:
+        return False
+    
+    sop.is_active = False
+    sop.updated_at = datetime.utcnow()
+    await db.commit()
+    return True
+
+async def get_sops_by_category(db: AsyncSession, user_id: int, category: str) -> List[models.SOP]:
+    """Get SOPs by category asynchronously"""
+    result = await db.execute(
+        select(models.SOP)
+        .where(
+            and_(
+                models.SOP.user_id == user_id,
+                models.SOP.category == category,
+                models.SOP.is_active == True
+            )
+        )
+        .order_by(models.SOP.priority.desc(), models.SOP.created_at.desc())
+    )
+    return result.scalars().all()
+
+async def search_sops(db: AsyncSession, user_id: int, search_term: str) -> List[models.SOP]:
+    """Search SOPs by title, description, or content asynchronously"""
+    search_pattern = f"%{search_term}%"
+    result = await db.execute(
+        select(models.SOP)
+        .where(
+            and_(
+                models.SOP.user_id == user_id,
+                models.SOP.is_active == True,
+                or_(
+                    models.SOP.title.ilike(search_pattern),
+                    models.SOP.description.ilike(search_pattern),
+                    models.SOP.content.ilike(search_pattern)
+                )
+            )
+        )
+        .order_by(models.SOP.priority.desc(), models.SOP.created_at.desc())
+    )
+    return result.scalars().all() 

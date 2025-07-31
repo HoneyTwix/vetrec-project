@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import json
-from dependencies import get_db
-from db import crud, schema, models
+from dependencies import get_async_db
+from db import async_crud, schema, models
 from utils.user_id_converter import get_or_create_user_id
 from utils.pdf_extractor import extract_text_from_pdf, is_pdf_file, get_pdf_info
 
@@ -13,17 +13,17 @@ router = APIRouter()
 async def create_sop(
     sop_data: schema.SOPCreate,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Create a new SOP for a user
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
         # Create the SOP
-        db_sop = crud.create_sop(db, db_user_id, sop_data)
+        db_sop = await async_crud.create_sop(db, db_user_id, sop_data)
         
         return schema.SOPResponse.from_orm(db_sop)
         
@@ -36,24 +36,24 @@ async def get_user_sops(
     active_only: bool = True,
     category: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Get all SOPs for a user with optional filtering
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
         if search:
             # Search SOPs
-            sops = crud.search_sops(db, db_user_id, search)
+            sops = await async_crud.search_sops(db, db_user_id, search)
         elif category:
             # Get SOPs by category
-            sops = crud.get_sops_by_category(db, db_user_id, category)
+            sops = await async_crud.get_sops_by_category(db, db_user_id, category)
         else:
             # Get all SOPs
-            sops = crud.get_user_sops(db, db_user_id, active_only)
+            sops = await async_crud.get_user_sops(db, db_user_id, active_only)
         
         return [schema.SOPResponse.from_orm(sop) for sop in sops]
         
@@ -63,17 +63,17 @@ async def get_user_sops(
 @router.get("/sops/{user_id}/categories")
 async def get_sop_categories(
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Get all unique categories used by SOPs for a user
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
         # Get all user's SOPs
-        sops = crud.get_user_sops(db, db_user_id, active_only=False)
+        sops = await async_crud.get_user_sops(db, db_user_id, active_only=False)
         
         # Extract unique categories
         categories = set()
@@ -90,18 +90,19 @@ async def get_sop_categories(
 async def get_sop(
     user_id: str,
     sop_id: int,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Get a specific SOP by ID
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
-        # Get the SOP and verify ownership
-        sop = crud.get_sop(db, sop_id)
-        if not sop or sop.user_id != db_user_id:
+        # Get the SOP
+        sop = await async_crud.get_sop(db, db_user_id, sop_id)
+        
+        if not sop:
             raise HTTPException(status_code=404, detail="SOP not found")
         
         return schema.SOPResponse.from_orm(sop)
@@ -116,17 +117,18 @@ async def update_sop(
     user_id: str,
     sop_id: int,
     sop_data: schema.SOPUpdate,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Update an existing SOP
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
         # Update the SOP
-        updated_sop = crud.update_sop(db, sop_id, db_user_id, sop_data)
+        updated_sop = await async_crud.update_sop(db, db_user_id, sop_id, sop_data)
+        
         if not updated_sop:
             raise HTTPException(status_code=404, detail="SOP not found")
         
@@ -141,17 +143,18 @@ async def update_sop(
 async def delete_sop(
     user_id: str,
     sop_id: int,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
-    Delete an SOP
+    Delete an SOP (soft delete by setting is_active to False)
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
         # Delete the SOP
-        success = crud.delete_sop(db, sop_id, db_user_id)
+        success = await async_crud.delete_sop(db, db_user_id, sop_id)
+        
         if not success:
             raise HTTPException(status_code=404, detail="SOP not found")
         
@@ -171,65 +174,57 @@ async def upload_sop_file(
     category: Optional[str] = None,
     tags: Optional[str] = None,  # Comma-separated tags
     priority: int = 1,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
-    Upload an SOP from a file (text, markdown, JSON, or PDF)
+    Upload a PDF file and create an SOP from it
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
+        
+        # Validate file type
+        if not is_pdf_file(file.filename):
+            raise HTTPException(status_code=400, detail="Only PDF files are supported")
         
         # Read file content
-        content = await file.read()
+        pdf_content_bytes = await file.read()
         
-        # Handle different file types
-        if file.filename and is_pdf_file(file.filename):
-            # Extract text from PDF
-            content_str, success = extract_text_from_pdf(content, file.filename)
-            
-            if not success:
-                # PDF extraction failed - store the error message
-                content_str = f"PDF EXTRACTION FAILED\n\n{content_str}"
-        else:
-            # For text files, decode as UTF-8
-            try:
-                content_str = content.decode('utf-8')
-            except UnicodeDecodeError:
-                # Try with different encoding if UTF-8 fails
-                try:
-                    content_str = content.decode('latin-1')
-                except:
-                    content_str = f"[ENCODING ERROR: {file.filename}]\n\nCould not decode file content. Please ensure the file is saved with UTF-8 encoding."
+        # Extract text from PDF
+        pdf_content, success = extract_text_from_pdf(pdf_content_bytes, file.filename)
         
-        # Parse tags if provided
-        tag_list = None
-        if tags:
-            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+        if not success:
+            raise HTTPException(status_code=400, detail=f"Could not extract text from PDF: {pdf_content}")
         
         # Use filename as title if not provided
         if not title:
-            title = file.filename or "Uploaded SOP"
+            title = file.filename.replace('.pdf', '').replace('_', ' ').title()
+        
+        # Parse tags
+        tag_list = []
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
         
         # Create SOP data
         sop_data = schema.SOPCreate(
             title=title,
-            description=description,
-            content=content_str,
+            description=description or f"Uploaded from {file.filename}",
+            content=pdf_content,
             category=category,
             tags=tag_list,
-            priority=priority,
-            is_active=True
+            priority=priority
         )
         
         # Create the SOP
-        db_sop = crud.create_sop(db, db_user_id, sop_data)
+        db_sop = await async_crud.create_sop(db, db_user_id, sop_data)
         
         return {
-            "message": "SOP uploaded successfully",
+            "message": "SOP created successfully from PDF",
             "sop": schema.SOPResponse.from_orm(db_sop)
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload SOP: {str(e)}")
 
@@ -240,87 +235,82 @@ async def bulk_upload_sops(
     descriptions: str = Form(...),  # Required: JSON string mapping filenames to descriptions
     category: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
-    Upload multiple SOPs at once with optional custom descriptions
+    Upload multiple PDF files and create SOPs from them
     """
     try:
         # Convert Clerk user ID to database user ID
-        db_user_id = get_or_create_user_id(user_id, db)
+        db_user_id = await get_or_create_user_id(user_id, db)
         
-        # Parse tags if provided
-        tag_list = None
-        if tags:
-            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
-        
-        # Parse descriptions - now required
+        # Parse descriptions JSON
         try:
             descriptions_dict = json.loads(descriptions)
         except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid descriptions format. Must be valid JSON.")
+            raise HTTPException(status_code=400, detail="Invalid descriptions JSON format")
         
-        uploaded_sops = []
+        # Parse tags
+        tag_list = []
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+        
+        results = []
         errors = []
         
-        for i, file in enumerate(files):
+        for file in files:
             try:
+                # Validate file type
+                if not is_pdf_file(file.filename):
+                    errors.append(f"{file.filename}: Only PDF files are supported")
+                    continue
+                
                 # Read file content
-                content = await file.read()
+                pdf_content_bytes = await file.read()
                 
-                # Handle different file types
-                if file.filename and is_pdf_file(file.filename):
-                    # Extract text from PDF
-                    content_str, success = extract_text_from_pdf(content, file.filename)
-                    
-                    if not success:
-                        # PDF extraction failed - store the error message
-                        content_str = f"PDF EXTRACTION FAILED\n\n{content_str}"
-                else:
-                    # For text files, decode as UTF-8
-                    try:
-                        content_str = content.decode('utf-8')
-                    except UnicodeDecodeError:
-                        # Try with different encoding if UTF-8 fails
-                        try:
-                            content_str = content.decode('latin-1')
-                        except:
-                            content_str = f"[ENCODING ERROR: {file.filename}]\n\nCould not decode file content. Please ensure the file is saved with UTF-8 encoding."
+                # Extract text from PDF
+                pdf_content, success = extract_text_from_pdf(pdf_content_bytes, file.filename)
                 
-                # Get custom description for this file - descriptions are now mandatory
-                custom_description = descriptions_dict.get(file.filename) if file.filename else None
-                if not custom_description:
-                    raise HTTPException(
-                        status_code=400, 
-                        detail=f"Description is required for file: {file.filename}"
-                    )
+                if not success:
+                    errors.append(f"{file.filename}: Could not extract text from PDF")
+                    continue
                 
-                description = custom_description
+                # Get description for this file
+                description = descriptions_dict.get(file.filename, f"Uploaded from {file.filename}")
+                
+                # Use filename as title
+                title = file.filename.replace('.pdf', '').replace('_', ' ').title()
                 
                 # Create SOP data
                 sop_data = schema.SOPCreate(
-                    title=file.filename or f"Uploaded SOP {i+1}",
+                    title=title,
                     description=description,
-                    content=content_str,
+                    content=pdf_content,
                     category=category,
                     tags=tag_list,
-                    priority=1,
-                    is_active=True
+                    priority=1
                 )
                 
                 # Create the SOP
-                db_sop = crud.create_sop(db, db_user_id, sop_data)
-                uploaded_sops.append(schema.SOPResponse.from_orm(db_sop))
+                db_sop = await async_crud.create_sop(db, db_user_id, sop_data)
+                
+                results.append({
+                    "filename": file.filename,
+                    "status": "success",
+                    "sop_id": db_sop.id
+                })
                 
             except Exception as e:
-                errors.append(f"Failed to upload {file.filename}: {str(e)}")
+                errors.append(f"{file.filename}: {str(e)}")
         
         return {
-            "message": f"Uploaded {len(uploaded_sops)} SOPs successfully",
-            "uploaded_sops": uploaded_sops,
+            "message": f"Bulk upload completed. {len(results)} successful, {len(errors)} failed.",
+            "results": results,
             "errors": errors
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to bulk upload SOPs: {str(e)}")
 
@@ -330,52 +320,42 @@ async def analyze_pdf_file(
     file: UploadFile = File(...)
 ):
     """
-    Analyze a PDF file to provide information about its structure and extraction potential
+    Analyze a PDF file and return its information without creating an SOP
     """
     try:
+        # Validate file type
+        if not is_pdf_file(file.filename):
+            raise HTTPException(status_code=400, detail="Only PDF files are supported")
+        
         # Read file content
-        content = await file.read()
+        pdf_content_bytes = await file.read()
         
-        if not file.filename or not is_pdf_file(file.filename):
-            raise HTTPException(status_code=400, detail="File is not a PDF")
+        # Get PDF info
+        pdf_info = get_pdf_info(pdf_content_bytes, file.filename)
         
-        # Get PDF information
-        pdf_info = get_pdf_info(content, file.filename)
+        # Extract text from PDF
+        pdf_content, success = extract_text_from_pdf(pdf_content_bytes, file.filename)
         
-        # Try to extract a sample of text to assess quality
-        sample_text, success = extract_text_from_pdf(content, file.filename)
+        if not success:
+            raise HTTPException(status_code=400, detail=f"Could not extract text from PDF: {pdf_content}")
         
-        # Truncate sample text for preview
-        preview_text = sample_text[:500] + "..." if len(sample_text) > 500 else sample_text
+        # Analyze content
+        word_count = len(pdf_content.split())
+        char_count = len(pdf_content)
         
-        analysis = {
-            "filename": pdf_info["filename"],
-            "file_size_mb": pdf_info["size_mb"],
-            "pages": pdf_info["pages"],
-            "is_encrypted": pdf_info["is_encrypted"],
-            "text_extractable": pdf_info["text_extractable"],
-            "extraction_success": success,
-            "preview_text": preview_text if success else None,
-            "recommendations": []
+        # Estimate reading time (average 200 words per minute)
+        reading_time_minutes = max(1, word_count // 200)
+        
+        return {
+            "filename": file.filename,
+            "pdf_info": pdf_info,
+            "content_preview": pdf_content[:500] + "..." if len(pdf_content) > 500 else pdf_content,
+            "statistics": {
+                "word_count": word_count,
+                "character_count": char_count,
+                "estimated_reading_time_minutes": reading_time_minutes
+            }
         }
-        
-        # Generate recommendations based on analysis
-        if pdf_info["is_encrypted"]:
-            analysis["recommendations"].append("PDF is password-protected. Please remove password protection before upload.")
-        
-        if not pdf_info["text_extractable"]:
-            analysis["recommendations"].append("PDF appears to contain only images (scanned document). Consider using OCR software.")
-        
-        if pdf_info["size_mb"] > 10:
-            analysis["recommendations"].append("Large PDF file. Consider splitting into smaller files for better processing.")
-        
-        if pdf_info["pages"] > 50:
-            analysis["recommendations"].append("PDF has many pages. Consider extracting relevant sections only.")
-        
-        if not analysis["recommendations"]:
-            analysis["recommendations"].append("PDF appears suitable for text extraction.")
-        
-        return analysis
         
     except HTTPException:
         raise

@@ -1,0 +1,4522 @@
+{
+  "user_id": 157232577,
+  "timestamp": "2025-07-31T12:35:19.563312",
+  "summary": {
+    "total_cases": 7,
+    "zero_shot_average": {
+      "overall_precision": 0.93,
+      "overall_recall": 0.872,
+      "overall_f1": 0.885
+    },
+    "multi_shot_average": {
+      "overall_precision": 0.958,
+      "overall_recall": 0.938,
+      "overall_f1": 0.947
+    },
+    "average_improvement": {
+      "overall_precision": 0.029,
+      "overall_recall": 0.065,
+      "overall_f1": 0.062
+    },
+    "processing_times": {
+      "zero_shot": {
+        "mean": 5.871,
+        "median": 6.266,
+        "std": 1.175
+      },
+      "multi_shot": {
+        "mean": 6.466,
+        "median": 5.784,
+        "std": 2.597
+      }
+    }
+  },
+  "detailed_results": [
+    {
+      "transcript_id": 61,
+      "transcript_text": "   Doctor: Patient with COPD, heart failure, and diabetes presents with \n        worsening shortness of breath. Prescribing prednisone 20mg daily for 5 days, \n        increased albuterol inhaler use, and adjusting diabetes medications. \n        Ordering chest X-ray, pulmonary function tests, and cardiac stress test. \n        Patient needs to monitor oxygen levels, blood sugar, and weight daily. \n        Schedule pulmonology consultation, cardiology follow-up, and diabetes \n        education clas...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.909,
+        "overall_recall": 1.0,
+        "overall_f1": 0.952,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 1.0,
+            "f1": 0.667
+          },
+          "client_reminders": {
+            "precision": 0.667,
+            "recall": 1.0,
+            "f1": 0.8
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.147,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.107,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.0,
+              0.009,
+              0.06,
+              0.338,
+              0.322,
+              0.407,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              0.0,
+              0.953,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              0.738,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.333,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0,
+              0.92,
+              0.36,
+              0.003,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.0,
+              0.006,
+              0.236,
+              1.0,
+              0.165,
+              0.001,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              0.064,
+              0.231,
+              1.0,
+              0.0,
+              0.002,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.992
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.001,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.5,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.337,
+              "max_semantic_similarity": 0.953,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.953,
+                0.0,
+                0.738,
+                0.0,
+                0.333
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.373,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.003,
+                0.236,
+                1.0,
+                0.165,
+                0.001,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.992
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 0.909,
+        "overall_recall": 1.0,
+        "overall_f1": 0.952,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 1.0,
+            "f1": 0.667
+          },
+          "client_reminders": {
+            "precision": 0.667,
+            "recall": 1.0,
+            "f1": 0.8
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.147,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.107,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.0,
+              0.009,
+              0.06,
+              0.338,
+              0.322,
+              0.407,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              0.0,
+              0.953,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              0.738,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.333,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0,
+              0.92,
+              0.36,
+              0.003,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.0,
+              0.006,
+              0.236,
+              1.0,
+              0.165,
+              0.001,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              0.064,
+              0.231,
+              1.0,
+              0.0,
+              0.006,
+              0.014,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.5,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.337,
+              "max_semantic_similarity": 0.953,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.953,
+                0.0,
+                0.738,
+                0.0,
+                0.333
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.374,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.003,
+                0.236,
+                1.0,
+                0.165,
+                0.001,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.0,
+        "overall_recall": 0.0,
+        "overall_f1": 0.0
+      },
+      "processing_time": {
+        "zero_shot": 7.314252853393555,
+        "multi_shot": 12.182003259658813
+      },
+      "context_quality": {
+        "num_similar_transcripts": 3,
+        "similarity_scores": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999182224273682,
+          0.9999182224273682,
+          0.9999182224273682
+        ],
+        "combined_scores": [
+          0.9999427556991576,
+          0.9999427556991576,
+          0.9999427556991576
+        ],
+        "transcript_ids": [
+          61,
+          62,
+          64
+        ],
+        "context_length": 2549,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999182224273682,
+        "avg_combined_score": 0.9999427556991577
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.147,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.107,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.0,
+              0.009,
+              0.06,
+              0.338,
+              0.322,
+              0.407,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              0.0,
+              0.953,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              0.738,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.333,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0,
+              0.92,
+              0.36,
+              0.003,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.0,
+              0.006,
+              0.236,
+              1.0,
+              0.165,
+              0.001,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              0.064,
+              0.231,
+              1.0,
+              0.0,
+              0.002,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.992
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.001,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.5,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.337,
+              "max_semantic_similarity": 0.953,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.953,
+                0.0,
+                0.738,
+                0.0,
+                0.333
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.373,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.003,
+                0.236,
+                1.0,
+                0.165,
+                0.001,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.992
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.147,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.107,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.0,
+              0.009,
+              0.06,
+              0.338,
+              0.322,
+              0.407,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              0.0,
+              0.953,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              0.738,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.333,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0,
+              0.92,
+              0.36,
+              0.003,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.0,
+              0.006,
+              0.236,
+              1.0,
+              0.165,
+              0.001,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              0.064,
+              0.231,
+              1.0,
+              0.0,
+              0.006,
+              0.014,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.5,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.337,
+              "max_semantic_similarity": 0.953,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.953,
+                0.0,
+                0.738,
+                0.0,
+                0.333
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.374,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.003,
+                0.236,
+                1.0,
+                0.165,
+                0.001,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 62,
+      "transcript_text": "        Doctor: Patient with COPD, heart failure, and diabetes presents with \n        worsening shortness of breath. Prescribing prednisone 20mg daily for 5 days, \n        increased albuterol inhaler use, and adjusting diabetes medications. \n        Ordering chest X-ray, pulmonary function tests, and cardiac stress test. \n        Patient needs to monitor oxygen levels, blood sugar, and weight daily. \n        Schedule pulmonology consultation, cardiology follow-up, and diabetes \n        education...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.909,
+        "overall_recall": 1.0,
+        "overall_f1": 0.952,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.571,
+            "recall": 1.0,
+            "f1": 0.727
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          },
+          "clinician_todos": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.144,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.017,
+              0.0,
+              0.0,
+              0.06,
+              0.338,
+              0.322,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              1.0,
+              0.012,
+              0.016,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.051,
+              1.0,
+              0.045,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.012,
+              0.008,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.009,
+              0.001,
+              0.0,
+              1.0,
+              0.92,
+              0.36,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.038,
+              0.001,
+              0.001,
+              0.236,
+              1.0,
+              0.165,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.017,
+              0.0,
+              0.0,
+              0.064,
+              0.231,
+              1.0,
+              0.002,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.146,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.001,
+                0.0,
+                1.0,
+                0.001,
+                0.01,
+                0.0,
+                0.001,
+                0.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                0.0,
+                0.0,
+                0.001
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.499,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.005,
+                0.001,
+                0.99
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.0,
+              "max_semantic_similarity": 0.0,
+              "min_semantic_similarity": 0.0
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.415,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.236,
+                1.0,
+                0.165,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.158,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.017,
+              0.0,
+              0.0,
+              0.06,
+              0.338,
+              0.322,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              1.0,
+              0.012,
+              0.016,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.051,
+              1.0,
+              0.045,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.012,
+              0.008,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.009,
+              0.001,
+              0.0,
+              1.0,
+              0.92,
+              0.36,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.038,
+              0.001,
+              0.001,
+              0.236,
+              1.0,
+              0.165,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.017,
+              0.0,
+              0.0,
+              0.064,
+              0.231,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.501,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.005,
+                0.001,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.349,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.008,
+              "all_similarities": [
+                1.0,
+                0.012,
+                0.016,
+                0.051,
+                1.0,
+                0.045,
+                0.012,
+                0.008,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.553,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.064,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.236,
+                1.0,
+                0.165,
+                0.064,
+                0.231,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.091,
+        "overall_recall": 0.0,
+        "overall_f1": 0.048
+      },
+      "processing_time": {
+        "zero_shot": 6.567359447479248,
+        "multi_shot": 6.070586681365967
+      },
+      "context_quality": {
+        "num_similar_transcripts": 3,
+        "similarity_scores": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999182224273682,
+          0.9999182224273682,
+          0.9999182224273682
+        ],
+        "combined_scores": [
+          0.9999427556991576,
+          0.9999427556991576,
+          0.9999427556991576
+        ],
+        "transcript_ids": [
+          61,
+          62,
+          64
+        ],
+        "context_length": 2549,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999182224273682,
+        "avg_combined_score": 0.9999427556991577
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.144,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.017,
+              0.0,
+              0.0,
+              0.06,
+              0.338,
+              0.322,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              1.0,
+              0.012,
+              0.016,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.051,
+              1.0,
+              0.045,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.012,
+              0.008,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.009,
+              0.001,
+              0.0,
+              1.0,
+              0.92,
+              0.36,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.038,
+              0.001,
+              0.001,
+              0.236,
+              1.0,
+              0.165,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.017,
+              0.0,
+              0.0,
+              0.064,
+              0.231,
+              1.0,
+              0.002,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.146,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.001,
+                0.0,
+                1.0,
+                0.001,
+                0.01,
+                0.0,
+                0.001,
+                0.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                0.0,
+                0.0,
+                0.001
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.499,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.005,
+                0.001,
+                0.99
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.0,
+              "max_semantic_similarity": 0.0,
+              "min_semantic_similarity": 0.0
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.415,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.236,
+                1.0,
+                0.165,
+                0.064,
+                0.231,
+                1.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.158,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.031,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.071,
+              0.331,
+              0.038,
+              0.029,
+              1.0,
+              0.003,
+              0.014,
+              0.017,
+              0.0,
+              0.0,
+              0.06,
+              0.338,
+              0.322,
+              0.0,
+              0.002,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.01,
+              0.0,
+              0.001,
+              1.0,
+              0.012,
+              0.016,
+              0.001,
+              0.106,
+              0.019,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.051,
+              1.0,
+              0.045,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.012,
+              0.008,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.416,
+              0.525,
+              0.0,
+              0.0,
+              0.009,
+              0.001,
+              0.0,
+              1.0,
+              0.92,
+              0.36,
+              0.349,
+              0.104,
+              0.0,
+              0.0,
+              0.038,
+              0.001,
+              0.001,
+              0.236,
+              1.0,
+              0.165,
+              0.01,
+              0.813,
+              0.0,
+              0.0,
+              0.017,
+              0.0,
+              0.0,
+              0.064,
+              0.231,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.255,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.031,
+                0.0,
+                0.001,
+                0.029,
+                1.0,
+                0.003,
+                0.014,
+                0.0,
+                0.002,
+                1.0,
+                0.0,
+                0.0,
+                0.002,
+                0.0,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.501,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.005,
+                0.001,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.349,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.008,
+              "all_similarities": [
+                1.0,
+                0.012,
+                0.016,
+                0.051,
+                1.0,
+                0.045,
+                0.012,
+                0.008,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.553,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.064,
+              "all_similarities": [
+                1.0,
+                0.92,
+                0.36,
+                0.236,
+                1.0,
+                0.165,
+                0.064,
+                0.231,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 63,
+      "transcript_text": " Doctor: Patient reports seasonal allergy symptoms\u2014sneezing, itchy eyes, and nasal congestion.\n    Starting loratadine 10mg once daily during allergy season. Recommend using a HEPA air purifier\n    at home and avoiding outdoor activities during high pollen count days. Schedule an allergy test\n    panel in 3 weeks. Nurse: I\u2019ll arrange the test appointment and send pollen tracking resources\n    to the patient portal.",
+      "zero_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.8,
+        "overall_f1": 0.889,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.667
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.308,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.0,
+              0.0,
+              0.991,
+              0.002,
+              0.0,
+              1.0,
+              0.425,
+              0.0,
+              0.001,
+              0.844,
+              0.0,
+              0.0,
+              0.888,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.712,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.425,
+              "all_similarities": [
+                1.0,
+                0.425
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.473,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                0.888,
+                0.001,
+                0.003,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 0.8,
+        "overall_recall": 0.8,
+        "overall_f1": 0.8,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.253,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.0,
+              0.0,
+              0.991,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.434,
+              0.001,
+              0.001,
+              0.903,
+              0.0,
+              0.0,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.359,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.0,
+                0.0,
+                0.434
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.501,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001,
+                0.003,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": -0.2,
+        "overall_recall": 0.0,
+        "overall_f1": -0.089
+      },
+      "processing_time": {
+        "zero_shot": 3.7920925617218018,
+        "multi_shot": 4.308329820632935
+      },
+      "context_quality": {
+        "num_similar_transcripts": 1,
+        "similarity_scores": [
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999697208404541
+        ],
+        "combined_scores": [
+          0.9999788045883178
+        ],
+        "transcript_ids": [
+          63
+        ],
+        "context_length": 906,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999697208404541,
+        "avg_combined_score": 0.9999788045883178
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.308,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.0,
+              0.0,
+              0.991,
+              0.002,
+              0.0,
+              1.0,
+              0.425,
+              0.0,
+              0.001,
+              0.844,
+              0.0,
+              0.0,
+              0.888,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.712,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.425,
+              "all_similarities": [
+                1.0,
+                0.425
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.473,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                0.888,
+                0.001,
+                0.003,
+                1.0
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.253,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.0,
+              0.0,
+              0.991,
+              0.002,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.434,
+              0.001,
+              0.001,
+              0.903,
+              0.0,
+              0.0,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.003,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.359,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.0,
+                0.0,
+                0.434
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.501,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001,
+                0.003,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 65,
+      "transcript_text": " Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.75,
+        "overall_f1": 0.857,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.667
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.241,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.101,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.361,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.479,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.005,
+              "all_similarities": [
+                0.899,
+                0.011,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.597,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.361,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.209,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.0,
+        "overall_recall": 0.25,
+        "overall_f1": 0.143
+      },
+      "processing_time": {
+        "zero_shot": 5.619406223297119,
+        "multi_shot": 5.783844709396362
+      },
+      "context_quality": {
+        "num_similar_transcripts": 3,
+        "similarity_scores": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999793767929077,
+          0.9999793767929077,
+          0.9999793767929077
+        ],
+        "combined_scores": [
+          0.9999855637550354,
+          0.9999855637550354,
+          0.9999855637550354
+        ],
+        "transcript_ids": [
+          65,
+          66,
+          67
+        ],
+        "context_length": 2936,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999793767929077,
+        "avg_combined_score": 0.9999855637550356
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.241,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.101,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.361,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.479,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.005,
+              "all_similarities": [
+                0.899,
+                0.011,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.597,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.361,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.209,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 66,
+      "transcript_text": " Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.556,
+        "overall_f1": 0.714,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 0.2,
+            "f1": 0.333
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.259,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.993,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.225,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.305,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.479,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.005,
+              "all_similarities": [
+                0.899,
+                0.011,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.399,
+              "max_semantic_similarity": 0.999,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                0.999,
+                0.993,
+                0.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.583,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.305,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.889,
+        "overall_f1": 0.941,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.889
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.2,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.993,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.001,
+                0.0,
+                0.0,
+                0.0,
+                0.999,
+                0.993,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.0,
+        "overall_recall": 0.333,
+        "overall_f1": 0.227
+      },
+      "processing_time": {
+        "zero_shot": 5.009500980377197,
+        "multi_shot": 5.388873100280762
+      },
+      "context_quality": {
+        "num_similar_transcripts": 3,
+        "similarity_scores": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999793767929077,
+          0.9999793767929077,
+          0.9999793767929077
+        ],
+        "combined_scores": [
+          0.9999855637550354,
+          0.9999855637550354,
+          0.9999855637550354
+        ],
+        "transcript_ids": [
+          65,
+          66,
+          67
+        ],
+        "context_length": 2936,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999793767929077,
+        "avg_combined_score": 0.9999855637550356
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.259,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.993,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.225,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.305,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.479,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.005,
+              "all_similarities": [
+                0.899,
+                0.011,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.399,
+              "max_semantic_similarity": 0.999,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                0.999,
+                0.993,
+                0.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.583,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.305,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.2,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.993,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.001,
+                0.0,
+                0.0,
+                0.0,
+                0.999,
+                0.993,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 67,
+      "transcript_text": "  Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 0.889,
+        "overall_recall": 1.0,
+        "overall_f1": 0.941,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.8,
+            "recall": 1.0,
+            "f1": 0.889
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.188,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.861,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.023,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.101,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.361,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.004,
+              "all_similarities": [
+                0.998,
+                0.004,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.194,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.861,
+                0.0,
+                0.0,
+                0.0,
+                0.023,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.597,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.361,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.209,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.111,
+        "overall_recall": 0.0,
+        "overall_f1": 0.059
+      },
+      "processing_time": {
+        "zero_shot": 6.528875827789307,
+        "multi_shot": 5.339593887329102
+      },
+      "context_quality": {
+        "num_similar_transcripts": 3,
+        "similarity_scores": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999793767929077,
+          0.9999793767929077,
+          0.9999793767929077
+        ],
+        "combined_scores": [
+          0.9999855637550354,
+          0.9999855637550354,
+          0.9999855637550354
+        ],
+        "transcript_ids": [
+          65,
+          66,
+          67
+        ],
+        "context_length": 2936,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999793767929077,
+        "avg_combined_score": 0.9999855637550356
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.188,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.861,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.023,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.101,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.361,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.004,
+              "all_similarities": [
+                0.998,
+                0.004,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.194,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.861,
+                0.0,
+                0.0,
+                0.0,
+                0.023,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.597,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                0.999,
+                0.361,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.209,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              1.0,
+              0.372,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.999,
+              0.637,
+              0.045,
+              1.0,
+              0.001,
+              0.0,
+              0.0,
+              0.001,
+              0.015,
+              0.999,
+              0.0,
+              0.017,
+              1.0,
+              0.002,
+              0.0,
+              0.0,
+              0.0,
+              0.043,
+              0.0,
+              0.0,
+              0.001,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.0,
+              0.001,
+              0.999,
+              0.051,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              0.152,
+              0.027,
+              0.996,
+              0.002,
+              0.0,
+              0.0,
+              0.002,
+              0.029,
+              1.0
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.604,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.045,
+              "all_similarities": [
+                1.0,
+                0.372,
+                0.045,
+                1.0
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.502,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.002,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.005,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.25,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                1.0,
+                0.002,
+                0.0,
+                0.0,
+                0.001,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.545,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.029,
+              "all_similarities": [
+                1.0,
+                0.152,
+                0.029,
+                1.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "transcript_id": 71,
+      "transcript_text": "    Doctor: The child has a history of mild persistent asthma, recently worsened after a cold. \n    I\u2019m prescribing albuterol nebulizer treatments every 4 hours as needed, and starting fluticasone \n    44mcg two puffs twice daily for maintenance. Parent should track symptoms using an asthma diary. \n    Schedule follow-up in 2 weeks and refer to pediatric pulmonologist to evaluate long-term plan. \n    Also order allergy testing to identify triggers.\n    Nurse: I\u2019ll help the parent with the diary ...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.8,
+        "overall_recall": 1.0,
+        "overall_f1": 0.889,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.667,
+            "recall": 0.667,
+            "f1": 0.667
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.333,
+            "recall": 1.0,
+            "f1": 0.5
+          },
+          "clinician_todos": {
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.172,
+            "max_semantic_similarity": 0.999,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              0.402,
+              0.002,
+              0.006,
+              0.004,
+              0.967,
+              0.001,
+              0.009,
+              0.001,
+              0.107,
+              0.988,
+              0.001,
+              0.0,
+              0.014,
+              0.925,
+              0.002,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.016,
+              0.002,
+              0.029,
+              0.903,
+              0.029,
+              0.001,
+              0.004,
+              0.848,
+              0.402,
+              0.002,
+              0.006,
+              0.004,
+              0.967,
+              0.001,
+              0.009,
+              0.001,
+              0.107,
+              0.988,
+              0.001,
+              0.0,
+              0.014,
+              0.925,
+              0.002,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.004,
+              0.002,
+              0.009,
+              0.917,
+              0.005,
+              0.001,
+              0.013,
+              0.999
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.276,
+              "max_semantic_similarity": 0.988,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.402,
+                0.002,
+                0.006,
+                0.107,
+                0.988,
+                0.001,
+                0.023,
+                0.0,
+                0.952
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.506,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                0.999,
+                0.001,
+                0.023,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.301,
+              "max_semantic_similarity": 0.903,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                0.903
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.219,
+              "max_semantic_similarity": 0.999,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.967,
+                0.001,
+                0.009,
+                0.001,
+                0.014,
+                0.925,
+                0.002,
+                0.001,
+                0.003,
+                0.0,
+                0.56,
+                0.001,
+                0.005,
+                0.001,
+                0.013,
+                0.999
+              ]
+            }
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.875,
+        "overall_f1": 0.933,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.667,
+            "recall": 0.667,
+            "f1": 0.667
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 0.75,
+            "f1": 0.857
+          }
+        },
+        "semantic_similarity_scores": {
+          "overall": {
+            "avg_semantic_similarity": 0.289,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              0.446,
+              0.004,
+              0.002,
+              0.0,
+              0.962,
+              0.001,
+              0.002,
+              0.0,
+              0.711,
+              1.0,
+              0.006,
+              0.002,
+              0.211,
+              0.994,
+              0.012,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.018,
+              0.014,
+              0.043,
+              1.0,
+              0.038,
+              0.011,
+              0.236,
+              0.968,
+              0.999,
+              0.088,
+              0.17,
+              0.003,
+              1.0,
+              0.014,
+              0.068,
+              0.006,
+              0.61,
+              1.0,
+              0.003,
+              0.002,
+              0.221,
+              1.0,
+              0.007,
+              0.001,
+              0.79,
+              0.006,
+              1.0,
+              0.002,
+              0.2,
+              0.002,
+              0.751,
+              0.009
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.349,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.446,
+                0.004,
+                0.002,
+                0.711,
+                1.0,
+                0.006,
+                0.023,
+                0.0,
+                0.952
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.506,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001,
+                0.023,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.273,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.014,
+                0.068,
+                0.006,
+                0.221,
+                1.0,
+                0.007,
+                0.001,
+                0.2,
+                0.002,
+                0.751,
+                0.009
+              ]
+            }
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.2,
+        "overall_recall": -0.125,
+        "overall_f1": 0.044
+      },
+      "processing_time": {
+        "zero_shot": 6.265594244003296,
+        "multi_shot": 6.187093734741211
+      },
+      "context_quality": {
+        "num_similar_transcripts": 1,
+        "similarity_scores": [
+          1.0
+        ],
+        "reranker_scores": [
+          0.9999786615371704
+        ],
+        "combined_scores": [
+          0.9999850630760192
+        ],
+        "transcript_ids": [
+          71
+        ],
+        "context_length": 1180,
+        "avg_similarity": 1.0,
+        "avg_reranker_score": 0.9999786615371704,
+        "avg_combined_score": 0.9999850630760192
+      },
+      "semantic_similarity_scores": {
+        "zero_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.172,
+            "max_semantic_similarity": 0.999,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              0.402,
+              0.002,
+              0.006,
+              0.004,
+              0.967,
+              0.001,
+              0.009,
+              0.001,
+              0.107,
+              0.988,
+              0.001,
+              0.0,
+              0.014,
+              0.925,
+              0.002,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.001,
+              0.001,
+              0.0,
+              0.0,
+              0.016,
+              0.002,
+              0.029,
+              0.903,
+              0.029,
+              0.001,
+              0.004,
+              0.848,
+              0.402,
+              0.002,
+              0.006,
+              0.004,
+              0.967,
+              0.001,
+              0.009,
+              0.001,
+              0.107,
+              0.988,
+              0.001,
+              0.0,
+              0.014,
+              0.925,
+              0.002,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.004,
+              0.002,
+              0.009,
+              0.917,
+              0.005,
+              0.001,
+              0.013,
+              0.999
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.276,
+              "max_semantic_similarity": 0.988,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.402,
+                0.002,
+                0.006,
+                0.107,
+                0.988,
+                0.001,
+                0.023,
+                0.0,
+                0.952
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.506,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                0.999,
+                0.001,
+                0.023,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 0.301,
+              "max_semantic_similarity": 0.903,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.0,
+                0.0,
+                0.903
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.219,
+              "max_semantic_similarity": 0.999,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.967,
+                0.001,
+                0.009,
+                0.001,
+                0.014,
+                0.925,
+                0.002,
+                0.001,
+                0.003,
+                0.0,
+                0.56,
+                0.001,
+                0.005,
+                0.001,
+                0.013,
+                0.999
+              ]
+            }
+          }
+        },
+        "multi_shot": {
+          "overall": {
+            "avg_semantic_similarity": 0.289,
+            "max_semantic_similarity": 1.0,
+            "min_semantic_similarity": 0.0,
+            "all_similarities": [
+              0.446,
+              0.004,
+              0.002,
+              0.0,
+              0.962,
+              0.001,
+              0.002,
+              0.0,
+              0.711,
+              1.0,
+              0.006,
+              0.002,
+              0.211,
+              0.994,
+              0.012,
+              0.001,
+              0.023,
+              0.0,
+              0.952,
+              0.0,
+              0.003,
+              0.0,
+              0.56,
+              0.001,
+              0.018,
+              0.014,
+              0.043,
+              1.0,
+              0.038,
+              0.011,
+              0.236,
+              0.968,
+              0.999,
+              0.088,
+              0.17,
+              0.003,
+              1.0,
+              0.014,
+              0.068,
+              0.006,
+              0.61,
+              1.0,
+              0.003,
+              0.002,
+              0.221,
+              1.0,
+              0.007,
+              0.001,
+              0.79,
+              0.006,
+              1.0,
+              0.002,
+              0.2,
+              0.002,
+              0.751,
+              0.009
+            ]
+          },
+          "categories": {
+            "follow_up_tasks": {
+              "avg_semantic_similarity": 0.349,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.0,
+              "all_similarities": [
+                0.446,
+                0.004,
+                0.002,
+                0.711,
+                1.0,
+                0.006,
+                0.023,
+                0.0,
+                0.952
+              ]
+            },
+            "medication_instructions": {
+              "avg_semantic_similarity": 0.506,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.001,
+                0.023,
+                1.0
+              ]
+            },
+            "client_reminders": {
+              "avg_semantic_similarity": 1.0,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 1.0,
+              "all_similarities": [
+                1.0
+              ]
+            },
+            "clinician_todos": {
+              "avg_semantic_similarity": 0.273,
+              "max_semantic_similarity": 1.0,
+              "min_semantic_similarity": 0.001,
+              "all_similarities": [
+                1.0,
+                0.014,
+                0.068,
+                0.006,
+                0.221,
+                1.0,
+                0.007,
+                0.001,
+                0.2,
+                0.002,
+                0.751,
+                0.009
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

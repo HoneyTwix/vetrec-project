@@ -1,0 +1,505 @@
+{
+  "user_id": 157232577,
+  "timestamp": "2025-07-31T11:45:26.080537",
+  "summary": {
+    "total_cases": 7,
+    "zero_shot_average": {
+      "overall_precision": 0.678,
+      "overall_recall": 0.63,
+      "overall_f1": 0.63
+    },
+    "multi_shot_average": {
+      "overall_precision": 0.873,
+      "overall_recall": 0.833,
+      "overall_f1": 0.85
+    },
+    "average_improvement": {
+      "overall_precision": 0.195,
+      "overall_recall": 0.203,
+      "overall_f1": 0.219
+    },
+    "processing_times": {
+      "zero_shot": {
+        "mean": 7.126,
+        "median": 6.956,
+        "std": 2.317
+      },
+      "multi_shot": {
+        "mean": 9.021,
+        "median": 8.143,
+        "std": 2.583
+      }
+    }
+  },
+  "detailed_results": [
+    {
+      "transcript_id": 61,
+      "transcript_text": "   Doctor: Patient with COPD, heart failure, and diabetes presents with \n        worsening shortness of breath. Prescribing prednisone 20mg daily for 5 days, \n        increased albuterol inhaler use, and adjusting diabetes medications. \n        Ordering chest X-ray, pulmonary function tests, and cardiac stress test. \n        Patient needs to monitor oxygen levels, blood sugar, and weight daily. \n        Schedule pulmonology consultation, cardiology follow-up, and diabetes \n        education clas...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.727,
+        "overall_recall": 0.8,
+        "overall_f1": 0.762,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 0.333,
+            "recall": 1.0,
+            "f1": 0.5
+          },
+          "client_reminders": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 0.636,
+        "overall_recall": 0.7,
+        "overall_f1": 0.667,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.25,
+            "recall": 0.5,
+            "f1": 0.333
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 0.75,
+            "f1": 0.857
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": -0.091,
+        "overall_recall": -0.1,
+        "overall_f1": -0.095
+      },
+      "processing_time": {
+        "zero_shot": 8.933258533477783,
+        "multi_shot": 7.334704399108887
+      }
+    },
+    {
+      "transcript_id": 62,
+      "transcript_text": "        Doctor: Patient with COPD, heart failure, and diabetes presents with \n        worsening shortness of breath. Prescribing prednisone 20mg daily for 5 days, \n        increased albuterol inhaler use, and adjusting diabetes medications. \n        Ordering chest X-ray, pulmonary function tests, and cardiac stress test. \n        Patient needs to monitor oxygen levels, blood sugar, and weight daily. \n        Schedule pulmonology consultation, cardiology follow-up, and diabetes \n        education...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.867,
+        "overall_recall": 1.3,
+        "overall_f1": 1.04,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.25,
+            "recall": 0.25,
+            "f1": 0.25
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+          },
+          "clinician_todos": {
+            "precision": 0.429,
+            "recall": 1.0,
+            "f1": 0.6
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 0.6,
+        "overall_recall": 0.6,
+        "overall_f1": 0.6,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0
+          },
+          "clinician_todos": {
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.857
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": -0.267,
+        "overall_recall": -0.7,
+        "overall_f1": -0.44
+      },
+      "processing_time": {
+        "zero_shot": 10.614757776260376,
+        "multi_shot": 12.883457899093628
+      }
+    },
+    {
+      "transcript_id": 63,
+      "transcript_text": " Doctor: Patient reports seasonal allergy symptoms\u2014sneezing, itchy eyes, and nasal congestion.\n    Starting loratadine 10mg once daily during allergy season. Recommend using a HEPA air purifier\n    at home and avoiding outdoor activities during high pollen count days. Schedule an allergy test\n    panel in 3 weeks. Nurse: I\u2019ll arrange the test appointment and send pollen tracking resources\n    to the patient portal.",
+      "zero_shot_metrics": {
+        "overall_precision": 0.6,
+        "overall_recall": 0.6,
+        "overall_f1": 0.6,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.4,
+        "overall_recall": 0.4,
+        "overall_f1": 0.4
+      },
+      "processing_time": {
+        "zero_shot": 8.472060203552246,
+        "multi_shot": 5.6649322509765625
+      }
+    },
+    {
+      "transcript_id": 65,
+      "transcript_text": " Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 0.857,
+        "overall_recall": 0.75,
+        "overall_f1": 0.8,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.667
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.143,
+        "overall_recall": 0.25,
+        "overall_f1": 0.2
+      },
+      "processing_time": {
+        "zero_shot": 6.955603122711182,
+        "multi_shot": 7.5853188037872314
+      }
+    },
+    {
+      "transcript_id": 66,
+      "transcript_text": " Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 0.75,
+        "overall_recall": 0.333,
+        "overall_f1": 0.462,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          },
+          "client_reminders": {
+            "precision": 0.5,
+            "recall": 0.2,
+            "f1": 0.286
+          },
+          "clinician_todos": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 0.875,
+        "overall_recall": 0.778,
+        "overall_f1": 0.824,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.667
+          },
+          "client_reminders": {
+            "precision": 0.75,
+            "recall": 0.6,
+            "f1": 0.667
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.125,
+        "overall_recall": 0.445,
+        "overall_f1": 0.362
+      },
+      "processing_time": {
+        "zero_shot": 4.248234748840332,
+        "multi_shot": 9.74971604347229
+      }
+    },
+    {
+      "transcript_id": 67,
+      "transcript_text": "  Doctor: Patient is in her first trimester of pregnancy. Recommending daily prenatal vitamin with folic acid, \n    and iron supplement 325mg once daily. Advise on avoiding high-mercury fish and limiting caffeine intake. \n    Schedule ultrasound in 4 weeks and routine prenatal labs. Patient should report any bleeding or severe cramps immediately.\n    Nurse: I'll set up the ultrasound and labs.",
+      "zero_shot_metrics": {
+        "overall_precision": 0.8,
+        "overall_recall": 0.5,
+        "overall_f1": 0.615,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          },
+          "client_reminders": {
+            "precision": 0.667,
+            "recall": 0.5,
+            "f1": 0.571
+          },
+          "clinician_todos": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 1.0,
+        "overall_f1": 1.0,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.2,
+        "overall_recall": 0.5,
+        "overall_f1": 0.385
+      },
+      "processing_time": {
+        "zero_shot": 5.028615236282349,
+        "multi_shot": 8.143357038497925
+      }
+    },
+    {
+      "transcript_id": 71,
+      "transcript_text": "    Doctor: The child has a history of mild persistent asthma, recently worsened after a cold. \n    I\u2019m prescribing albuterol nebulizer treatments every 4 hours as needed, and starting fluticasone \n    44mcg two puffs twice daily for maintenance. Parent should track symptoms using an asthma diary. \n    Schedule follow-up in 2 weeks and refer to pediatric pulmonologist to evaluate long-term plan. \n    Also order allergy testing to identify triggers.\n    Nurse: I\u2019ll help the parent with the diary ...",
+      "zero_shot_metrics": {
+        "overall_precision": 0.143,
+        "overall_recall": 0.125,
+        "overall_f1": 0.133,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0
+          },
+          "medication_instructions": {
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0
+          }
+        }
+      },
+      "multi_shot_metrics": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.75,
+        "overall_f1": 0.857,
+        "category_scores": {
+          "follow_up_tasks": {
+            "precision": 1.0,
+            "recall": 0.667,
+            "f1": 0.8
+          },
+          "medication_instructions": {
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.667
+          },
+          "client_reminders": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "clinician_todos": {
+            "precision": 0.667,
+            "recall": 0.5,
+            "f1": 0.571
+          }
+        }
+      },
+      "improvement": {
+        "overall_precision": 0.857,
+        "overall_recall": 0.625,
+        "overall_f1": 0.724
+      },
+      "processing_time": {
+        "zero_shot": 5.6290435791015625,
+        "multi_shot": 11.783548355102539
+      }
+    }
+  ]
+}
