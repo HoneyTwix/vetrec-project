@@ -94,59 +94,6 @@ async def _parallel_sop_retrieval(user_id, sop_ids, db: AsyncSession):
         print(f"Warning: Could not load SOPs: {e}")
         return []
 
-async def _parallel_similarity_searches(transcript_text, user_id):
-    """Run similarity searches in parallel"""
-    try:
-        # Create tasks for parallel execution
-        tasks = []
-        
-        # Task 1: Search test case transcripts (user_id 999)
-        test_case_task = asyncio.create_task(
-            asyncio.to_thread(
-                embedding_service.find_similar_transcripts_optimized,
-                transcript_text,
-                999,  # Test cases
-                10,
-                0.3  # Very low threshold to catch exact matches
-            )
-        )
-        tasks.append(("test_cases", test_case_task))
-        
-        # Task 2: Search user's own previous transcripts if user_id is provided
-        if user_id and user_id != 999:
-            user_task = asyncio.create_task(
-                asyncio.to_thread(
-                    embedding_service.find_similar_transcripts_optimized,
-                    transcript_text,
-                    user_id,  # User's own transcripts
-                    10,
-                    0.3  # Very low threshold to catch exact matches
-                )
-            )
-            tasks.append(("user_transcripts", user_task))
-        
-        # Wait for all tasks to complete
-        results = {}
-        for name, task in tasks:
-            try:
-                results[name] = await task
-                print(f"Found {len(results[name])} similar {name}")
-            except Exception as e:
-                print(f"Error in {name} search: {e}")
-                results[name] = []
-        
-        # Combine results
-        similar_transcripts = []
-        similar_transcripts.extend(results.get("test_cases", []))
-        similar_transcripts.extend(results.get("user_transcripts", []))
-        
-        print(f"Total similar transcripts found: {len(similar_transcripts)}")
-        return similar_transcripts
-        
-    except Exception as e:
-        print(f"Error in parallel similarity searches: {e}")
-        return []
-
 async def _parallel_embedding_creation(transcript_text, extraction_data, user_id, transcript_id):
     """Create embeddings in parallel"""
     try:
@@ -197,9 +144,7 @@ def _determine_confidence_level(evaluation_summary: Dict) -> str:
     Uses a hybrid approach: LLM confidence + numeric override for edge cases
     """
     # Extract key metrics
-    strategy = evaluation_summary.get("strategy", "unknown")
     best_similarity = evaluation_summary.get("best_similarity", 0.0)
-    num_standards = evaluation_summary.get("num_standards", 0)
     
     # Get evaluation scores
     if "evaluation" in evaluation_summary:
@@ -561,7 +506,8 @@ async def extract_medical_actions(
                     # Single standard evaluation
                     evaluation_result = b.EvaluateWithSingleStandard(
                         predicted_extraction=extraction_data,
-                        primary_standard=selected_standards[0]
+                        primary_standard=selected_standards[0],
+                        original_transcript=request.transcript_text
                     )
                     
                     evaluation_summary = {
@@ -579,6 +525,7 @@ async def extract_medical_actions(
                     evaluation_result = b.EvaluateWithMultipleStandards(
                         predicted_extraction=extraction_data,
                         selected_standards=selected_standards,
+                        original_transcript=request.transcript_text,
                         aggregation_method="weighted"
                     )
                     
@@ -807,7 +754,7 @@ async def extract_medical_actions(
                 print(f"Creating embeddings for transcript ID: {transcript.id}, user_id: {transcript.user_id}")
                 
                 # Run embedding creation in parallel
-                embedding_results = await _parallel_embedding_creation(
+                await _parallel_embedding_creation(
                     transcript.transcript_text,
                     db_extraction_data,
                     transcript.user_id,
@@ -1117,7 +1064,7 @@ async def review_and_save_extraction(
             transcript = await get_transcript_async(db, transcript_id)
             if transcript:
                 # Run embedding creation in parallel
-                embedding_results = await _parallel_embedding_creation(
+                await _parallel_embedding_creation(
                     transcript.transcript_text,
                     extraction_data,
                     transcript.user_id,
@@ -1163,7 +1110,7 @@ async def save_flagged_response(
             transcript = await get_transcript_async(db, request.transcript_id)
             if transcript:
                 # Run embedding creation in parallel
-                embedding_results = await _parallel_embedding_creation(
+                await _parallel_embedding_creation(
                     transcript.transcript_text,
                     extraction_data,
                     transcript.user_id,

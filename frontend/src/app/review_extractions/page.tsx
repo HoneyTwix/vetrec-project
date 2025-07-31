@@ -9,6 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { 
   getUserExtractions, 
   updateExtraction, 
   deleteExtraction,
@@ -22,11 +28,14 @@ import {
   Trash2, 
   Save, 
   X, 
-  Eye,
   AlertCircle,
   CheckCircle,
   Plus,
-  ArrowLeft
+  ArrowLeft,
+  Calendar,
+  Pill,
+  Bell,
+  ClipboardList
 } from 'lucide-react';
 
 export default function ReviewExtractionsPage() {
@@ -36,9 +45,8 @@ export default function ReviewExtractionsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingExtraction, setEditingExtraction] = useState<UserExtraction | null>(null);
-  const [showTranscript, setShowTranscript] = useState<number | null>(null);
-
-  
+  const [selectedExtraction, setSelectedExtraction] = useState<UserExtraction | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -80,6 +88,11 @@ export default function ReviewExtractionsPage() {
     }
   }, [user, isLoaded, router,]);
 
+  const handleCardClick = (extraction: UserExtraction) => {
+    setSelectedExtraction(extraction);
+    setIsModalOpen(true);
+  };
+
   const handleEdit = (extraction: UserExtraction) => {
     setEditingExtraction(extraction);
   };
@@ -108,6 +121,12 @@ export default function ReviewExtractionsPage() {
       setExtractions(extractions.map(ext => 
         ext.id === updatedExtraction.id ? updatedExtraction : ext
       ));
+      
+      // Update the selected extraction if it's the one being edited
+      if (selectedExtraction?.id === updatedExtraction.id) {
+        setSelectedExtraction(updatedExtraction);
+      }
+      
       setEditingExtraction(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update extraction');
@@ -129,6 +148,12 @@ export default function ReviewExtractionsPage() {
     try {
       await deleteExtraction(user.id, extractionId);
       setExtractions(extractions.filter(ext => ext.id !== extractionId));
+      
+      // Close modal if the deleted extraction was selected
+      if (selectedExtraction?.id === extractionId) {
+        setIsModalOpen(false);
+        setSelectedExtraction(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete extraction');
     } finally {
@@ -404,6 +429,16 @@ export default function ReviewExtractionsPage() {
     }
   };
 
+  const getSummaryStats = (extraction: UserExtraction) => {
+    return {
+      followUpTasks: extraction.follow_up_tasks.length,
+      medications: extraction.medication_instructions.length,
+      reminders: extraction.client_reminders.length,
+      todos: extraction.clinician_todos.length,
+      customExtractions: extraction.custom_extractions ? Object.keys(extraction.custom_extractions).length : 0
+    };
+  };
+
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
@@ -444,32 +479,39 @@ export default function ReviewExtractionsPage() {
           </div>
         </div>
 
-        {/* Extractions List */}
-        <div className="space-y-6">
+        {/* Extractions Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            <div className="text-center py-12">
+            <div className="col-span-full text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-slate-600">Loading extractions...</p>
             </div>
           ) : extractions.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">No Extractions Found</h3>
-                                 <p className="text-slate-600 mb-4">
-                   You haven&apos;t saved any extractions yet. Create your first extraction to see it here.
-                 </p>
-                <Button onClick={() => router.push('/')}>
-                  Create Extraction
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="col-span-full">
+              <Card>
+                <CardContent className="text-center py-12">
+                  <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-800 mb-2">No Extractions Found</h3>
+                  <p className="text-slate-600 mb-4">
+                    You haven&apos;t saved any extractions yet. Create your first extraction to see it here.
+                  </p>
+                  <Button onClick={() => router.push('/')}>
+                    Create Extraction
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           ) : (
-            extractions.map((extraction) => (
-              <Card key={extraction.id} className="border-slate-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            extractions.map((extraction) => {
+              const stats = getSummaryStats(extraction);
+              return (
+                <Card 
+                  key={extraction.id} 
+                  className="border-slate-200 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleCardClick(extraction)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 ${getConfidenceColor(extraction.confidence_level)}`}>
                           {getConfidenceIcon(extraction.confidence_level)}
@@ -480,425 +522,481 @@ export default function ReviewExtractionsPage() {
                         {new Date(extraction.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setShowTranscript(showTranscript === extraction.id ? null : extraction.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        {showTranscript === extraction.id ? 'Hide' : 'View'} Transcript
-                      </Button>
-                      
-                      {editingExtraction?.id !== extraction.id && (
-                        <>
-                          <Button
-                            onClick={() => handleEdit(extraction)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            onClick={() => handleDelete(extraction.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        </>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Transcript Preview */}
+                    <div className="bg-slate-50 p-3 rounded-lg">
+                      <h4 className="font-medium text-slate-800 mb-2 text-sm">Transcript Preview</h4>
+                      <div className="text-sm text-slate-600 line-clamp-3">
+                        {extraction.transcript.transcript_text.substring(0, 150)}...
+                      </div>
+                    </div>
+
+                    {/* Summary Stats */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {stats.followUpTasks > 0 && (
+                        <div className="flex items-center gap-2 text-blue-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>{stats.followUpTasks} tasks</span>
+                        </div>
                       )}
+                      {stats.medications > 0 && (
+                        <div className="flex items-center gap-2 text-green-600">
+                          <Pill className="w-4 h-4" />
+                          <span>{stats.medications} medications</span>
+                        </div>
+                      )}
+                      {stats.reminders > 0 && (
+                        <div className="flex items-center gap-2 text-yellow-600">
+                          <Bell className="w-4 h-4" />
+                          <span>{stats.reminders} reminders</span>
+                        </div>
+                      )}
+                      {stats.todos > 0 && (
+                        <div className="flex items-center gap-2 text-purple-600">
+                          <ClipboardList className="w-4 h-4" />
+                          <span>{stats.todos} todos</span>
+                        </div>
+                      )}
+                    </div>
+
+                                         {/* Click hint and delete button */}
+                     <div className="flex items-center justify-between pt-2 border-t">
+                       <div className="text-xs text-slate-500">
+                         Click to view details
+                       </div>
+                       <Button
+                         onClick={async (e) => {
+                           e.stopPropagation(); // Prevent card click
+                           await handleDelete(extraction.id);
+                         }}
+                         variant="ghost"
+                         size="sm"
+                         className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 h-auto"
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   </CardContent>
+                 </Card>
+               );
+             })
+           )}
+         </div>
+
+        {/* Modal for Detailed View */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <span>Extraction Details</span>
+                <div className="flex gap-2">
+                  {selectedExtraction && editingExtraction?.id !== selectedExtraction.id && (
+                    <>
+                      <Button
+                        onClick={() => handleEdit(selectedExtraction)}
+                        variant="outline"
+                        size="sm"
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(selectedExtraction.id)}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedExtraction && (
+              <div className="space-y-6">
+                {/* Transcript Section */}
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-slate-800 mb-2">Original Transcript</h4>
+                  <div className="text-sm text-slate-600 max-h-40 overflow-y-auto">
+                    {selectedExtraction.transcript.transcript_text}
+                  </div>
+                </div>
+
+                {/* Extraction Results */}
+                {editingExtraction?.id === selectedExtraction.id ? (
+                  // Edit Mode
+                  <div className="space-y-6">
+                    {/* Follow-up Tasks */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-base font-medium">Follow-up Tasks</Label>
+                        <Button onClick={addFollowUpTask} variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Task
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {editingExtraction.follow_up_tasks.map((task, index) => (
+                          <div key={index} className="p-3 border rounded-lg space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Task description"
+                                value={task.description}
+                                onChange={(e) => updateFollowUpTask(index, 'description', e.target.value)}
+                              />
+                              <select
+                                value={task.priority}
+                                onChange={(e) => updateFollowUpTask(index, 'priority', e.target.value)}
+                                className="px-3 py-2 border border-slate-300 rounded-md"
+                              >
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                              </select>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Due date"
+                                value={task.due_date ?? ''}
+                                onChange={(e) => updateFollowUpTask(index, 'due_date', e.target.value)}
+                              />
+                              <Input
+                                placeholder="Assigned to"
+                                value={task.assigned_to ?? ''}
+                                onChange={(e) => updateFollowUpTask(index, 'assigned_to', e.target.value)}
+                              />
+                            </div>
+                            <Button
+                              onClick={() => removeItem('follow_up_tasks', index)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Medication Instructions */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-base font-medium">Medication Instructions</Label>
+                        <Button onClick={addMedication} variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Medication
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {editingExtraction.medication_instructions.map((med, index) => (
+                          <div key={index} className="p-3 border rounded-lg space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Medication name"
+                                value={med.medication_name}
+                                onChange={(e) => updateMedication(index, 'medication_name', e.target.value)}
+                              />
+                              <Input
+                                placeholder="Dosage"
+                                value={med.dosage}
+                                onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Frequency"
+                                value={med.frequency}
+                                onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
+                              />
+                              <Input
+                                placeholder="Duration"
+                                value={med.duration ?? ''}
+                                onChange={(e) => updateMedication(index, 'duration', e.target.value)}
+                              />
+                            </div>
+                            <Textarea
+                              placeholder="Special instructions"
+                              value={med.special_instructions ?? ''}
+                              onChange={(e) => updateMedication(index, 'special_instructions', e.target.value)}
+                              className="min-h-[60px]"
+                            />
+                            <Button
+                              onClick={() => removeItem('medication_instructions', index)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Client Reminders */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-base font-medium">Client Reminders</Label>
+                        <Button onClick={addClientReminder} variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Reminder
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {editingExtraction.client_reminders.map((reminder, index) => (
+                          <div key={index} className="p-3 border rounded-lg space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Reminder description"
+                                value={reminder.description}
+                                onChange={(e) => updateClientReminder(index, 'description', e.target.value)}
+                              />
+                              <Input
+                                placeholder="Reminder type"
+                                value={reminder.reminder_type}
+                                onChange={(e) => updateClientReminder(index, 'reminder_type', e.target.value)}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <select
+                                value={reminder.priority ?? 'medium'}
+                                onChange={(e) => updateClientReminder(index, 'priority', e.target.value)}
+                                className="px-3 py-2 border border-slate-300 rounded-md"
+                              >
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                              </select>
+                              <Input
+                                placeholder="Due date"
+                                value={reminder.due_date ?? ''}
+                                onChange={(e) => updateClientReminder(index, 'due_date', e.target.value)}
+                              />
+                            </div>
+                            <Button
+                              onClick={() => removeItem('client_reminders', index)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Clinician Todos */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-base font-medium">Clinician Tasks</Label>
+                        <Button onClick={addClinicianTodo} variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Task
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {editingExtraction.clinician_todos.map((todo, index) => (
+                          <div key={index} className="p-3 border rounded-lg space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Task description"
+                                value={todo.description}
+                                onChange={(e) => updateClinicianTodo(index, 'description', e.target.value)}
+                              />
+                              <Input
+                                placeholder="Task type"
+                                value={todo.task_type}
+                                onChange={(e) => updateClinicianTodo(index, 'task_type', e.target.value)}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <select
+                                value={todo.priority ?? 'medium'}
+                                onChange={(e) => updateClinicianTodo(index, 'priority', e.target.value)}
+                                className="px-3 py-2 border border-slate-300 rounded-md"
+                              >
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                              </select>
+                              <Input
+                                placeholder="Due date"
+                                value={todo.due_date ?? ''}
+                                onChange={(e) => updateClinicianTodo(index, 'due_date', e.target.value)}
+                              />
+                            </div>
+                            <Button
+                              onClick={() => removeItem('clinician_todos', index)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-4">
+                      <Button onClick={handleSave} disabled={isLoading} className="flex-1">
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Changes
+                          </>
+                        )}
+                      </Button>
+                      <Button onClick={handleCancelEdit} variant="outline">
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Transcript Preview */}
-                  {showTranscript === extraction.id && (
-                    <div className="bg-slate-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-slate-800 mb-2">Original Transcript</h4>
-                      <div className="text-sm text-slate-600 max-h-32 overflow-y-auto">
-                        {extraction.transcript.transcript_text}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Extraction Results */}
-                  {editingExtraction?.id === extraction.id ? (
-                    // Edit Mode
-                    <div className="space-y-6">
-                      {/* Follow-up Tasks */}
+                ) : (
+                  // View Mode
+                  <div className="space-y-4">
+                    {/* Follow-up Tasks */}
+                    {selectedExtraction.follow_up_tasks.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label className="text-base font-medium">Follow-up Tasks</Label>
-                          <Button onClick={addFollowUpTask} variant="outline" size="sm">
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Task
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {editingExtraction.follow_up_tasks.map((task, index) => (
-                            <div key={index} className="p-3 border rounded-lg space-y-2">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Task description"
-                                  value={task.description}
-                                  onChange={(e) => updateFollowUpTask(index, 'description', e.target.value)}
-                                />
-                                <select
-                                  value={task.priority}
-                                  onChange={(e) => updateFollowUpTask(index, 'priority', e.target.value)}
-                                  className="px-3 py-2 border border-slate-300 rounded-md"
-                                >
-                                  <option value="low">Low Priority</option>
-                                  <option value="medium">Medium Priority</option>
-                                  <option value="high">High Priority</option>
-                                </select>
+                        <Label className="text-base font-medium">Follow-up Tasks</Label>
+                        <div className="space-y-2 mt-2">
+                          {selectedExtraction.follow_up_tasks.map((task, index) => (
+                            <div key={index} className="p-3 bg-slate-50 rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{task.description}</span>
+                                <span className={`px-2 py-1 text-xs rounded ${task.priority === 'high' ? 'bg-red-100 text-red-800' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                  {task.priority} priority
+                                </span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Due date"
-                                  value={task.due_date ?? ''}
-                                  onChange={(e) => updateFollowUpTask(index, 'due_date', e.target.value)}
-                                />
-                                <Input
-                                  placeholder="Assigned to"
-                                  value={task.assigned_to ?? ''}
-                                  onChange={(e) => updateFollowUpTask(index, 'assigned_to', e.target.value)}
-                                />
-                              </div>
-                              <Button
-                                onClick={() => removeItem('follow_up_tasks', index)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Remove
-                              </Button>
+                              {(task.due_date ?? task.assigned_to) && (
+                                <div className="text-sm text-slate-600 mt-1">
+                                  {task.due_date && <span>Due: {task.due_date}</span>}
+                                  {task.due_date && task.assigned_to && <span> • </span>}
+                                  {task.assigned_to && <span>Assigned to: {task.assigned_to}</span>}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Medication Instructions */}
+                    {/* Medication Instructions */}
+                    {selectedExtraction.medication_instructions.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label className="text-base font-medium">Medication Instructions</Label>
-                          <Button onClick={addMedication} variant="outline" size="sm">
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Medication
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {editingExtraction.medication_instructions.map((med, index) => (
-                            <div key={index} className="p-3 border rounded-lg space-y-2">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Medication name"
-                                  value={med.medication_name}
-                                  onChange={(e) => updateMedication(index, 'medication_name', e.target.value)}
-                                />
-                                <Input
-                                  placeholder="Dosage"
-                                  value={med.dosage}
-                                  onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
-                                />
+                        <Label className="text-base font-medium">Medication Instructions</Label>
+                        <div className="space-y-2 mt-2">
+                          {selectedExtraction.medication_instructions.map((med, index) => (
+                            <div key={index} className="p-3 bg-slate-50 rounded-lg">
+                              <div className="font-medium">{med.medication_name}</div>
+                              <div className="text-sm text-slate-600">
+                                {med.dosage} • {med.frequency}
+                                {med.duration && ` • Duration: ${med.duration}`}
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Frequency"
-                                  value={med.frequency}
-                                  onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
-                                />
-                                <Input
-                                  placeholder="Duration"
-                                  value={med.duration ?? ''}
-                                  onChange={(e) => updateMedication(index, 'duration', e.target.value)}
-                                />
-                              </div>
-                              <Textarea
-                                placeholder="Special instructions"
-                                value={med.special_instructions ?? ''}
-                                onChange={(e) => updateMedication(index, 'special_instructions', e.target.value)}
-                                className="min-h-[60px]"
-                              />
-                              <Button
-                                onClick={() => removeItem('medication_instructions', index)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Remove
-                              </Button>
+                              {med.special_instructions && (
+                                <div className="text-sm text-slate-600 mt-1">
+                                  <span className="font-medium">Special instructions:</span> {med.special_instructions}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Client Reminders */}
+                    {/* Client Reminders */}
+                    {selectedExtraction.client_reminders.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label className="text-base font-medium">Client Reminders</Label>
-                          <Button onClick={addClientReminder} variant="outline" size="sm">
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Reminder
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {editingExtraction.client_reminders.map((reminder, index) => (
-                            <div key={index} className="p-3 border rounded-lg space-y-2">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Reminder description"
-                                  value={reminder.description}
-                                  onChange={(e) => updateClientReminder(index, 'description', e.target.value)}
-                                />
-                                <Input
-                                  placeholder="Reminder type"
-                                  value={reminder.reminder_type}
-                                  onChange={(e) => updateClientReminder(index, 'reminder_type', e.target.value)}
-                                />
+                        <Label className="text-base font-medium">Client Reminders</Label>
+                        <div className="space-y-2 mt-2">
+                          {selectedExtraction.client_reminders.map((reminder, index) => (
+                            <div key={index} className="p-3 bg-slate-50 rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{reminder.description}</span>
+                                <span className="text-sm text-slate-600">{reminder.reminder_type}</span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <select
-                                  value={reminder.priority ?? 'medium'}
-                                  onChange={(e) => updateClientReminder(index, 'priority', e.target.value)}
-                                  className="px-3 py-2 border border-slate-300 rounded-md"
-                                >
-                                  <option value="low">Low Priority</option>
-                                  <option value="medium">Medium Priority</option>
-                                  <option value="high">High Priority</option>
-                                </select>
-                                <Input
-                                  placeholder="Due date"
-                                  value={reminder.due_date ?? ''}
-                                  onChange={(e) => updateClientReminder(index, 'due_date', e.target.value)}
-                                />
-                              </div>
-                              <Button
-                                onClick={() => removeItem('client_reminders', index)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Remove
-                              </Button>
+                              {(reminder.priority ?? reminder.due_date) && (
+                                <div className="text-sm text-slate-600 mt-1">
+                                  {reminder.priority && <span className={`px-2 py-1 text-xs rounded mr-2 ${reminder.priority === 'high' ? 'bg-red-100 text-red-800' : reminder.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                    {reminder.priority} priority
+                                  </span>}
+                                  {reminder.due_date && <span>Due: {reminder.due_date}</span>}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Clinician Todos */}
+                    {/* Clinician Todos */}
+                    {selectedExtraction.clinician_todos.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label className="text-base font-medium">Clinician Tasks</Label>
-                          <Button onClick={addClinicianTodo} variant="outline" size="sm">
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Task
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {editingExtraction.clinician_todos.map((todo, index) => (
-                            <div key={index} className="p-3 border rounded-lg space-y-2">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <Input
-                                  placeholder="Task description"
-                                  value={todo.description}
-                                  onChange={(e) => updateClinicianTodo(index, 'description', e.target.value)}
-                                />
-                                <Input
-                                  placeholder="Task type"
-                                  value={todo.task_type}
-                                  onChange={(e) => updateClinicianTodo(index, 'task_type', e.target.value)}
-                                />
+                        <Label className="text-base font-medium">Clinician Tasks</Label>
+                        <div className="space-y-2 mt-2">
+                          {selectedExtraction.clinician_todos.map((todo, index) => (
+                            <div key={index} className="p-3 bg-slate-50 rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{todo.description}</span>
+                                <span className="text-sm text-slate-600">{todo.task_type}</span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <select
-                                  value={todo.priority ?? 'medium'}
-                                  onChange={(e) => updateClinicianTodo(index, 'priority', e.target.value)}
-                                  className="px-3 py-2 border border-slate-300 rounded-md"
-                                >
-                                  <option value="low">Low Priority</option>
-                                  <option value="medium">Medium Priority</option>
-                                  <option value="high">High Priority</option>
-                                </select>
-                                <Input
-                                  placeholder="Due date"
-                                  value={todo.due_date ?? ''}
-                                  onChange={(e) => updateClinicianTodo(index, 'due_date', e.target.value)}
-                                />
-                              </div>
-                              <Button
-                                onClick={() => removeItem('clinician_todos', index)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                Remove
-                              </Button>
+                              {(todo.priority ?? todo.due_date) && (
+                                <div className="text-sm text-slate-600 mt-1">
+                                  {todo.priority && <span className={`px-2 py-1 text-xs rounded mr-2 ${todo.priority === 'high' ? 'bg-red-100 text-red-800' : todo.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                    {todo.priority} priority
+                                  </span>}
+                                  {todo.due_date && <span>Due: {todo.due_date}</span>}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
+                    )}
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pt-4">
-                        <Button onClick={handleSave} disabled={isLoading} className="flex-1">
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4 mr-2" />
-                              Save Changes
-                            </>
-                          )}
-                        </Button>
-                        <Button onClick={handleCancelEdit} variant="outline">
-                          Cancel
-                        </Button>
+                    {/* Custom Extractions */}
+                    {selectedExtraction.custom_extractions && Object.keys(selectedExtraction.custom_extractions).length > 0 && (
+                      <div>
+                        <Label className="text-base font-medium">Custom Extractions</Label>
+                        <div className="space-y-2 mt-2">
+                          {Object.entries(selectedExtraction.custom_extractions).map(([category, data]) => (
+                            <div key={category} className="p-3 bg-slate-50 rounded-lg">
+                              <div className="font-medium text-blue-600">{category}</div>
+                              <div className="text-sm text-slate-600 mt-1">{data.extracted_data}</div>
+                              {data.reasoning && (
+                                <div className="text-xs text-slate-500 mt-1">
+                                  <span className="font-medium">Reasoning:</span> {data.reasoning}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    // View Mode
-                    <div className="space-y-4">
-                      {/* Follow-up Tasks */}
-                      {extraction.follow_up_tasks.length > 0 && (
-                        <div>
-                          <Label className="text-base font-medium">Follow-up Tasks</Label>
-                          <div className="space-y-2 mt-2">
-                            {extraction.follow_up_tasks.map((task, index) => (
-                              <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{task.description}</span>
-                                  <span className={`px-2 py-1 text-xs rounded ${task.priority === 'high' ? 'bg-red-100 text-red-800' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                                    {task.priority} priority
-                                  </span>
-                                </div>
-                                {(task.due_date ?? task.assigned_to) && (
-                                  <div className="text-sm text-slate-600 mt-1">
-                                    {task.due_date && <span>Due: {task.due_date}</span>}
-                                    {task.due_date && task.assigned_to && <span> • </span>}
-                                    {task.assigned_to && <span>Assigned to: {task.assigned_to}</span>}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Medication Instructions */}
-                      {extraction.medication_instructions.length > 0 && (
-                        <div>
-                          <Label className="text-base font-medium">Medication Instructions</Label>
-                          <div className="space-y-2 mt-2">
-                            {extraction.medication_instructions.map((med, index) => (
-                              <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                                <div className="font-medium">{med.medication_name}</div>
-                                <div className="text-sm text-slate-600">
-                                  {med.dosage} • {med.frequency}
-                                  {med.duration && ` • Duration: ${med.duration}`}
-                                </div>
-                                {med.special_instructions && (
-                                  <div className="text-sm text-slate-600 mt-1">
-                                    <span className="font-medium">Special instructions:</span> {med.special_instructions}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Client Reminders */}
-                      {extraction.client_reminders.length > 0 && (
-                        <div>
-                          <Label className="text-base font-medium">Client Reminders</Label>
-                          <div className="space-y-2 mt-2">
-                            {extraction.client_reminders.map((reminder, index) => (
-                              <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{reminder.description}</span>
-                                  <span className="text-sm text-slate-600">{reminder.reminder_type}</span>
-                                </div>
-                                {(reminder.priority ?? reminder.due_date) && (
-                                  <div className="text-sm text-slate-600 mt-1">
-                                    {reminder.priority && <span className={`px-2 py-1 text-xs rounded mr-2 ${reminder.priority === 'high' ? 'bg-red-100 text-red-800' : reminder.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                                      {reminder.priority} priority
-                                    </span>}
-                                    {reminder.due_date && <span>Due: {reminder.due_date}</span>}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Clinician Todos */}
-                      {extraction.clinician_todos.length > 0 && (
-                        <div>
-                          <Label className="text-base font-medium">Clinician Tasks</Label>
-                          <div className="space-y-2 mt-2">
-                            {extraction.clinician_todos.map((todo, index) => (
-                              <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{todo.description}</span>
-                                  <span className="text-sm text-slate-600">{todo.task_type}</span>
-                                </div>
-                                {(todo.priority ?? todo.due_date) && (
-                                  <div className="text-sm text-slate-600 mt-1">
-                                    {todo.priority && <span className={`px-2 py-1 text-xs rounded mr-2 ${todo.priority === 'high' ? 'bg-red-100 text-red-800' : todo.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                                      {todo.priority} priority
-                                    </span>}
-                                    {todo.due_date && <span>Due: {todo.due_date}</span>}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Custom Extractions */}
-                      {extraction.custom_extractions && Object.keys(extraction.custom_extractions).length > 0 && (
-                        <div>
-                          <Label className="text-base font-medium">Custom Extractions</Label>
-                          <div className="space-y-2 mt-2">
-                            {Object.entries(extraction.custom_extractions).map(([category, data]) => (
-                              <div key={category} className="p-3 bg-slate-50 rounded-lg">
-                                <div className="font-medium text-blue-600">{category}</div>
-                                <div className="text-sm text-slate-600 mt-1">{data.extracted_data}</div>
-                                {data.reasoning && (
-                                  <div className="text-xs text-slate-500 mt-1">
-                                    <span className="font-medium">Reasoning:</span> {data.reasoning}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Error Display */}
         {error && (

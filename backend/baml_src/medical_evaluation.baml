@@ -28,13 +28,15 @@ class EvaluationResult {
 function EvaluateMedicalExtraction(
   predicted_extraction: MedicalExtraction,
   gold_standard: MedicalExtraction,
+  original_transcript: string,
   evaluation_context: string?
 ) -> EvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are a medical information extraction quality evaluator. Your task is to assess how well a predicted medical extraction matches the gold standard (correct) extraction.
+You are a medical information extraction quality evaluator. Your task is to assess how well a predicted medical extraction accurately represents the ORIGINAL TRANSCRIPT, using the gold standard only as a structural guideline.
 
-**Evaluation Criteria:**
+**CRITICAL EVALUATION PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. The gold standard is ONLY a structural template showing how to format and categorize information. 
 
 1. **Completeness**: Are all important items from the gold standard captured?
 2. **Accuracy**: Are the extracted items factually correct?
@@ -42,60 +44,76 @@ You are a medical information extraction quality evaluator. Your task is to asse
 4. **Clarity**: Are descriptions clear and actionable?
 5. **Semantic Understanding**: Do items convey the same meaning even if phrased differently?
 
+**EVALUATION CRITERIA (Prioritized):**
+
+1. **TRANSCRIPT ACCURACY (80% of score)**: Does the extraction accurately capture what's actually mentioned in the original transcript?
+2. **STRUCTURAL QUALITY (20% of score)**: Does the extraction follow proper medical extraction formatting and categorization?
+
 **Scoring Guidelines:**
-- 1.0 = Perfect match (all items correctly extracted with same meaning)
-- 0.9 = Excellent (minor differences in phrasing, same meaning)
-- 0.8 = Very good (some items missed or added, but core information correct)
-- 0.7 = Good (several items missed or added, but major points captured)
-- 0.6 = Fair (significant omissions or additions, but main concepts present)
-- 0.5 = Poor (major errors or missing critical information)
-- 0.0-0.4 = Very poor (major errors, missing key information)
+- 1.0 = Perfect extraction from transcript (all items correctly extracted with same meaning as transcript)
+- 0.9 = Excellent (minor differences in phrasing, same meaning as transcript)
+- 0.8 = Very good (some items missed or added, but core transcript information correct)
+- 0.7 = Good (several items missed or added, but major transcript points captured)
+- 0.6 = Fair (significant omissions or additions, but main transcript concepts present)
+- 0.5 = Poor (major errors or missing critical transcript information)
+- 0.0-0.4 = Very poor (major errors, missing key transcript information)
+
+**CRITICAL RULES:**
+- **NEVER dock points for differences between extraction and gold standard if the extraction correctly represents the transcript**
+- **ALWAYS prioritize transcript accuracy over gold standard similarity**
+- **Gold standard is a formatting guide, not a content requirement**
+- **If transcript says "2 weeks" but gold standard shows "3 weeks", extraction should say "2 weeks" and get full credit**
+- **If transcript says "metformin 500mg" but gold standard shows "metformin 1000mg", extraction should say "500mg" and get full credit**
 
 **Category-Specific Evaluation:**
 
 **Follow-up Tasks:**
-- Evaluate completeness of scheduled tasks, monitoring requirements, and follow-up appointments
-- Consider priority levels and due dates
-- Assess if tasks are assigned to correct parties (client vs clinician)
+- Evaluate completeness of scheduled tasks, monitoring requirements, and follow-up appointments AS MENTIONED IN TRANSCRIPT
+- Consider priority levels and due dates AS STATED IN TRANSCRIPT
+- Assess if tasks are assigned to correct parties (client vs clinician) AS INDICATED IN TRANSCRIPT
 
 **Medication Instructions:**
-- Check medication names, dosages, frequencies, and durations
-- Evaluate special instructions and contraindications
-- Consider drug interactions and patient-specific instructions
+- Check medication names, dosages, frequencies, and durations AS SPECIFIED IN TRANSCRIPT
+- Evaluate special instructions and contraindications AS MENTIONED IN TRANSCRIPT
+- Consider drug interactions and patient-specific instructions AS STATED IN TRANSCRIPT
 
 **Client Reminders:**
-- Assess patient communication items (appointments, tests, lifestyle changes)
-- Evaluate reminder types and priorities
-- Check due dates and urgency levels
+- Assess patient communication items (appointments, tests, lifestyle changes) AS MENTIONED IN TRANSCRIPT
+- Evaluate reminder types and priorities AS INDICATED IN TRANSCRIPT
+- Check due dates and urgency levels AS STATED IN TRANSCRIPT
 
 **Clinician To-Dos:**
-- Evaluate staff tasks (referrals, test orders, documentation)
-- Assess task types and priorities
-- Check assignments and due dates
+- Evaluate staff tasks (referrals, test orders, documentation) AS MENTIONED IN TRANSCRIPT
+- Assess task types and priorities AS INDICATED IN TRANSCRIPT
+- Check assignments and due dates AS STATED IN TRANSCRIPT
 
-**Semantic Matching Examples:**
-✅ "Schedule blood work" ≈ "Order lab tests"
-✅ "Monitor blood sugar daily" ≈ "Check glucose levels every day"
-✅ "Take medication twice daily" ≈ "Administer drug 2x per day"
-❌ "Schedule blood work" ≠ "Patient has diabetes" (different meaning)
+**Semantic Matching Examples (against TRANSCRIPT):**
+✅ "Schedule blood work" ≈ "Order lab tests" (if both appear in transcript)
+✅ "Monitor blood sugar daily" ≈ "Check glucose levels every day" (if both appear in transcript)
+✅ "Take medication twice daily" ≈ "Administer drug 2x per day" (if both appear in transcript)
+❌ "Schedule blood work" ≠ "Patient has diabetes" (different meaning in transcript)
 
 **Evaluation Process:**
-1. Compare each category systematically
-2. Identify matches, omissions, and additions
-3. Assess semantic similarity for matched items
-4. Calculate precision, recall, and F1 scores
-5. Provide detailed reasoning for each category
-6. Determine overall confidence level
+1. **FIRST**: Compare extraction against ORIGINAL TRANSCRIPT for accuracy
+2. **SECOND**: Use gold standard only to assess structural quality and formatting
+3. **THIRD**: Identify matches, omissions, and additions relative to TRANSCRIPT
+4. **FOURTH**: Assess semantic similarity for matched items against TRANSCRIPT
+5. **FIFTH**: Calculate precision, recall, and F1 scores based on TRANSCRIPT accuracy
+6. **SIXTH**: Provide detailed reasoning for each category based on TRANSCRIPT content
+7. **SEVENTH**: Determine overall confidence level based on TRANSCRIPT accuracy
 
 **Output Format:**
-Provide detailed evaluation with specific examples of matches, omissions, and additions. Explain your reasoning for each category score.
+Provide detailed evaluation with specific examples of matches, omissions, and additions relative to the TRANSCRIPT. Explain your reasoning for each category score based on TRANSCRIPT accuracy, not gold standard similarity.
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
 
-**GOLD STANDARD:**
+**GOLD STANDARD (STRUCTURAL TEMPLATE ONLY):**
 {{ gold_standard }}
 
 {% if evaluation_context %}
@@ -103,12 +121,14 @@ Provide detailed evaluation with specific examples of matches, omissions, and ad
 {{ evaluation_context }}
 {% endif %}
 
-Please evaluate the predicted extraction against the gold standard and provide:
-1. Overall quality score (0.0-1.0)
-2. Category-specific scores with detailed reasoning
-3. Precision, recall, and F1 scores
-4. Overall reasoning explaining the evaluation
-5. Confidence level in your assessment
+Please evaluate the predicted extraction against the ORIGINAL TRANSCRIPT and provide:
+1. Overall quality score (0.0-1.0) based on TRANSCRIPT accuracy
+2. Category-specific scores with detailed reasoning based on TRANSCRIPT content
+3. Precision, recall, and F1 scores calculated against TRANSCRIPT
+4. Overall reasoning explaining the evaluation based on TRANSCRIPT accuracy
+5. Confidence level in your assessment based on TRANSCRIPT accuracy
+
+**REMEMBER**: The transcript is the source of truth. Only use the gold standard as a structural guide for formatting and categorization.
 
 {{ ctx.output_format }}
 "#
@@ -188,6 +208,7 @@ test sample_evaluation {
         }
       ]
     }
+    original_transcript "Doctor: Mrs. Johnson, I see your blood pressure is still elevated at 160/95. I want you to return in 2 weeks for a follow-up to check your blood pressure. If it's still elevated, we might need to adjust your medication. Also, please make sure to take your lisinopril 10mg once daily at the same time each day. I'll also order some blood work to check your kidney function."
   }
 }
 
@@ -195,7 +216,7 @@ class TestCase {
   case_id string
   predicted_extraction MedicalExtraction
   gold_standard MedicalExtraction
-  transcript string?
+  transcript string
 }
 
 class AverageCategoryScores {
@@ -225,32 +246,37 @@ function EvaluateMultipleExtractions(
 ) -> MultipleEvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are evaluating multiple medical extraction test cases to generate a comprehensive quality report.
+You are evaluating multiple medical extraction test cases to generate a comprehensive quality report based on TRANSCRIPT ACCURACY.
 
-For each test case, evaluate the predicted extraction against the gold standard using the same criteria as the single evaluation function.
+For each test case, evaluate the predicted extraction against the ORIGINAL TRANSCRIPT using the same criteria as the single evaluation function.
+
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates.
 
 **Evaluation Process:**
-1. Evaluate each test case individually
-2. Calculate average scores across all categories
-3. Identify patterns in extraction quality
-4. Provide insights on strengths and weaknesses
-5. Generate recommendations for improvement
+1. Evaluate each test case individually against its ORIGINAL TRANSCRIPT
+2. Calculate average scores across all categories based on TRANSCRIPT accuracy
+3. Identify patterns in extraction quality relative to TRANSCRIPTS
+4. Provide insights on strengths and weaknesses in TRANSCRIPT representation
+5. Generate recommendations for improving TRANSCRIPT accuracy
 
 **Report Structure:**
-- Summary statistics (averages across all cases)
-- Detailed results for each test case
-- Quality insights and recommendations
+- Summary statistics (averages across all cases based on transcript accuracy)
+- Detailed results for each test case (evaluated against transcript)
+- Quality insights and recommendations for transcript accuracy
 
 ---
 
 **TEST CASES:**
 {{ test_cases }}
 
-Please evaluate all test cases and provide:
-1. Summary statistics with averages
-2. Detailed evaluation results for each case
-3. Overall insights about extraction quality patterns
-4. Recommendations for improving extraction accuracy
+Please evaluate all test cases against their ORIGINAL TRANSCRIPTS and provide:
+1. Summary statistics with averages based on transcript accuracy
+2. Detailed evaluation results for each case (evaluated against transcript)
+3. Overall insights about extraction quality patterns relative to transcripts
+4. Recommendations for improving transcript accuracy
+
+**REMEMBER**: Each evaluation should be based on how well the extraction represents the original transcript, not how well it matches the gold standard.
 
 {{ ctx.output_format }}
 "#
@@ -271,30 +297,37 @@ class ConfidenceEvaluationResult {
 function EvaluateWithConfidence(
   predicted_extraction: MedicalExtraction,
   gold_standard: MedicalExtraction,
+  original_transcript: string,
   confidence_threshold: float?
 ) -> ConfidenceEvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are evaluating medical extraction quality with additional confidence analysis.
+You are evaluating medical extraction quality with additional confidence analysis based on TRANSCRIPT ACCURACY.
 
-**Confidence Assessment:**
-- High Confidence: Clear semantic matches, complete information, accurate details
-- Medium Confidence: Some ambiguity, minor differences, partial matches
-- Low Confidence: Significant differences, missing information, unclear matches
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates.
 
-**Confidence Factors:**
-1. Semantic clarity of matches
-2. Completeness of extraction
-3. Accuracy of medical details
-4. Consistency with medical domain knowledge
-5. Ambiguity in source text
+**Confidence Assessment (based on transcript accuracy):**
+- High Confidence: Clear semantic matches to transcript, complete information from transcript, accurate details from transcript
+- Medium Confidence: Some ambiguity in transcript interpretation, minor differences from transcript, partial matches to transcript
+- Low Confidence: Significant differences from transcript, missing information from transcript, unclear matches to transcript
+
+**Confidence Factors (relative to transcript):**
+1. Semantic clarity of matches to transcript content
+2. Completeness of extraction relative to transcript
+3. Accuracy of medical details as stated in transcript
+4. Consistency with medical domain knowledge from transcript
+5. Ambiguity in source transcript interpretation
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
 
-**GOLD STANDARD:**
+**GOLD STANDARD (STRUCTURAL TEMPLATE ONLY):**
 {{ gold_standard }}
 
 {% if confidence_threshold %}
@@ -303,10 +336,12 @@ You are evaluating medical extraction quality with additional confidence analysi
 {% endif %}
 
 Please provide:
-1. Standard evaluation with scores and reasoning
-2. Confidence analysis identifying high/low confidence items
-3. Explanation of confidence factors
-4. Recommendations for improving confidence
+1. Standard evaluation with scores and reasoning based on TRANSCRIPT accuracy
+2. Confidence analysis identifying high/low confidence items relative to TRANSCRIPT
+3. Explanation of confidence factors based on TRANSCRIPT representation
+4. Recommendations for improving transcript accuracy
+
+**REMEMBER**: Evaluate confidence based on how well the extraction represents the original transcript, not the gold standard.
 
 {{ ctx.output_format }}
 "#
@@ -352,37 +387,44 @@ class AdaptiveEvaluationResult {
 function EvaluateAdaptively(
   predicted_extraction: MedicalExtraction,
   available_standards: GoldStandardCase[],
+  original_transcript: string,
   evaluation_context: string?
 ) -> AdaptiveEvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are performing adaptive evaluation of medical extraction quality based on relevance scores.
+You are performing adaptive evaluation of medical extraction quality based on relevance scores, with the ORIGINAL TRANSCRIPT as the source of truth.
+
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates for formatting and categorization.
 
 **Adaptive Strategy Rules:**
-- High Relevance (≥0.8): Use single standard evaluation
-- Medium Relevance (0.6-0.8): Use 2-3 standards evaluation  
-- Low Relevance (0.4-0.6): Use 4-5 standards evaluation
-- Very Low Relevance (<0.4): Use 6+ standards evaluation
+- High Relevance (≥0.8): Use single standard evaluation against transcript
+- Medium Relevance (0.6-0.8): Use 2-3 standards evaluation against transcript  
+- Low Relevance (0.4-0.6): Use 4-5 standards evaluation against transcript
+- Very Low Relevance (<0.4): Use 6+ standards evaluation against transcript
 
 **Evaluation Process:**
-1. Analyze similarity scores of available gold standards
-2. Select evaluation strategy based on best match relevance
-3. Perform evaluations against selected standards
-4. Aggregate results using appropriate method
-5. Provide confidence analysis and cost metrics
+1. Analyze similarity scores of available gold standards to transcript
+2. Select evaluation strategy based on best match relevance to transcript
+3. Perform evaluations against selected standards, prioritizing transcript accuracy
+4. Aggregate results using appropriate method, weighted toward transcript accuracy
+5. Provide confidence analysis and cost metrics based on transcript representation
 
 **Aggregation Methods:**
-- Single: Use primary evaluation directly
-- Few: Weighted average (primary standard weighted higher)
-- Multiple: Average with outlier detection
-- Comprehensive: Robust average with variance analysis
+- Single: Use primary evaluation directly (against transcript)
+- Few: Weighted average (primary standard weighted higher, but transcript accuracy prioritized)
+- Multiple: Average with outlier detection (based on transcript accuracy)
+- Comprehensive: Robust average with variance analysis (based on transcript accuracy)
 
-**Confidence Assessment:**
-- High: Clear semantic match, consistent evaluations
-- Medium: Good match with some variance
-- Low: Poor match, high variance, uncertain evaluation
+**Confidence Assessment (based on transcript accuracy):**
+- High: Clear semantic match to transcript, consistent evaluations against transcript
+- Medium: Good match to transcript with some variance
+- Low: Poor match to transcript, high variance, uncertain evaluation
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
@@ -396,11 +438,13 @@ You are performing adaptive evaluation of medical extraction quality based on re
 {% endif %}
 
 Please:
-1. Analyze similarity scores and select appropriate strategy
-2. Perform evaluations against selected standards
-3. Aggregate results based on strategy type
-4. Provide confidence analysis and cost metrics
-5. Explain reasoning for strategy selection
+1. Analyze similarity scores and select appropriate strategy based on transcript relevance
+2. Perform evaluations against selected standards, prioritizing transcript accuracy
+3. Aggregate results based on strategy type, weighted toward transcript accuracy
+4. Provide confidence analysis and cost metrics based on transcript representation
+5. Explain reasoning for strategy selection based on transcript accuracy
+
+**REMEMBER**: The transcript is the source of truth. Gold standards are only structural guides.
 
 {{ ctx.output_format }}
 "#
@@ -430,32 +474,39 @@ class StandardSelectionResult {
 function SelectRelevantStandards(
   predicted_extraction: MedicalExtraction,
   all_standards: GoldStandardCase[],
+  original_transcript: string,
   max_standards: int?
 ) -> StandardSelectionResult {
   client "openai/gpt-4o"
   prompt #"
-You are selecting the most relevant gold standards for evaluation based on semantic similarity.
+You are selecting the most relevant gold standards for evaluation based on semantic similarity to the ORIGINAL TRANSCRIPT.
+
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates.
 
 **Selection Criteria:**
-- Semantic similarity to predicted extraction
-- Medical context relevance
-- Completeness of gold standard
-- Diversity of selected standards
+- Semantic similarity to ORIGINAL TRANSCRIPT (primary criterion)
+- Medical context relevance to transcript content
+- Completeness of gold standard structure
+- Diversity of selected standards for robust evaluation
 
-**Strategy Selection:**
-- Single (1): Best match ≥0.8 similarity
-- Few (2-3): Best match 0.6-0.8 similarity
-- Multiple (4-5): Best match 0.4-0.6 similarity
-- Comprehensive (6+): Best match <0.4 similarity
+**Strategy Selection (based on transcript similarity):**
+- Single (1): Best match ≥0.8 similarity to transcript
+- Few (2-3): Best match 0.6-0.8 similarity to transcript
+- Multiple (4-5): Best match 0.4-0.6 similarity to transcript
+- Comprehensive (6+): Best match <0.4 similarity to transcript
 
 **Selection Process:**
-1. Calculate semantic similarity for all standards
-2. Rank standards by similarity score
-3. Select appropriate number based on best match
-4. Ensure diversity in selected standards
-5. Provide reasoning for selection
+1. Calculate semantic similarity for all standards relative to ORIGINAL TRANSCRIPT
+2. Rank standards by similarity score to transcript
+3. Select appropriate number based on best match to transcript
+4. Ensure diversity in selected standards for robust evaluation
+5. Provide reasoning for selection based on transcript relevance
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
@@ -469,11 +520,13 @@ You are selecting the most relevant gold standards for evaluation based on seman
 {% endif %}
 
 Please:
-1. Analyze semantic similarity to all standards
-2. Select most relevant standards based on strategy
-3. Ensure diversity in selected standards
-4. Provide detailed reasoning for selection
-5. Include similarity analysis and confidence assessment
+1. Analyze semantic similarity to ORIGINAL TRANSCRIPT for all standards
+2. Select most relevant standards based on transcript similarity
+3. Ensure diversity in selected standards for robust evaluation
+4. Provide detailed reasoning for selection based on transcript relevance
+5. Include similarity analysis and confidence assessment relative to transcript
+
+**REMEMBER**: Select standards based on their relevance to the original transcript, not just their structural similarity.
 
 {{ ctx.output_format }}
 "#
@@ -513,35 +566,42 @@ class MultiStandardResult {
 function EvaluateWithMultipleStandards(
   predicted_extraction: MedicalExtraction,
   selected_standards: GoldStandardCase[],
+  original_transcript: string,
   aggregation_method: "weighted" | "average" | "robust"
 ) -> MultiStandardResult {
   client "openai/gpt-4o"
   prompt #"
-You are evaluating medical extraction quality against multiple gold standards and aggregating results.
+You are evaluating medical extraction quality against multiple gold standards and aggregating results, with the ORIGINAL TRANSCRIPT as the source of truth.
+
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates for formatting and categorization.
 
 **Aggregation Methods:**
-- weighted: Weight by similarity score (higher similarity = higher weight)
-- average: Simple arithmetic mean of all evaluations
-- robust: Mean with outlier detection and removal
+- weighted: Weight by similarity score to transcript (higher transcript similarity = higher weight)
+- average: Simple arithmetic mean of all evaluations against transcript
+- robust: Mean with outlier detection and removal based on transcript accuracy
 
 **Evaluation Process:**
-1. Evaluate extraction against each selected standard
-2. Calculate individual scores and reasoning
-3. Aggregate results using specified method
-4. Detect and handle outliers
-5. Assess consistency across evaluations
+1. Evaluate extraction against each selected standard, prioritizing transcript accuracy
+2. Calculate individual scores and reasoning based on transcript representation
+3. Aggregate results using specified method, weighted toward transcript accuracy
+4. Detect and handle outliers based on transcript accuracy
+5. Assess consistency across evaluations relative to transcript
 
-**Consistency Assessment:**
-- High: All scores within 0.2 range
-- Medium: Scores within 0.4 range
-- Low: Scores vary by more than 0.4
+**Consistency Assessment (based on transcript accuracy):**
+- High: All scores within 0.2 range when evaluated against transcript
+- Medium: Scores within 0.4 range when evaluated against transcript
+- Low: Scores vary by more than 0.4 when evaluated against transcript
 
-**Outlier Detection:**
-- Identify evaluations that differ significantly from others
-- Consider medical context when assessing outliers
-- Provide reasoning for outlier identification
+**Outlier Detection (based on transcript accuracy):**
+- Identify evaluations that differ significantly from others in transcript accuracy
+- Consider medical context when assessing outliers relative to transcript
+- Provide reasoning for outlier identification based on transcript representation
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
@@ -553,11 +613,13 @@ You are evaluating medical extraction quality against multiple gold standards an
 {{ aggregation_method }}
 
 Please:
-1. Evaluate against each selected standard
-2. Aggregate results using specified method
-3. Assess consistency and detect outliers
-4. Provide detailed insights and cost metrics
-5. Explain aggregation reasoning and confidence
+1. Evaluate against each selected standard, prioritizing transcript accuracy
+2. Aggregate results using specified method, weighted toward transcript accuracy
+3. Assess consistency and detect outliers based on transcript accuracy
+4. Provide detailed insights and cost metrics based on transcript representation
+5. Explain aggregation reasoning and confidence based on transcript accuracy
+
+**REMEMBER**: The transcript is the source of truth. Gold standards are only structural guides.
 
 {{ ctx.output_format }}
 "#
@@ -586,31 +648,38 @@ class SingleStandardResult {
 function EvaluateWithSingleStandard(
   predicted_extraction: MedicalExtraction,
   primary_standard: GoldStandardCase,
+  original_transcript: string,
   evaluation_context: string?
 ) -> SingleStandardResult {
   client "openai/gpt-4o"
   prompt #"
-You are performing a cost-effective single standard evaluation for high-relevance cases.
+You are performing a cost-effective single standard evaluation for high-relevance cases, with the ORIGINAL TRANSCRIPT as the source of truth.
+
+**CRITICAL PRINCIPLE:**
+The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates.
 
 **Single Standard Evaluation:**
-- Use when best match has ≥0.8 similarity
-- Focus on detailed, thorough evaluation
-- Consider potential biases of single standard
-- Provide confidence in evaluation reliability
+- Use when best match has ≥0.8 similarity to transcript
+- Focus on detailed, thorough evaluation against transcript
+- Consider potential biases of single standard structure
+- Provide confidence in evaluation reliability based on transcript accuracy
 
-**Evaluation Quality:**
-- Assess completeness of gold standard
-- Consider potential biases or limitations
-- Evaluate semantic match quality
-- Provide confidence assessment
+**Evaluation Quality (based on transcript accuracy):**
+- Assess completeness of extraction relative to transcript
+- Consider potential biases or limitations of structural template
+- Evaluate semantic match quality to transcript
+- Provide confidence assessment based on transcript representation
 
 **Efficiency Focus:**
-- Single LLM call for evaluation
-- Detailed reasoning for confidence
-- Cost-benefit analysis
-- Quality assurance measures
+- Single LLM call for evaluation against transcript
+- Detailed reasoning for confidence based on transcript accuracy
+- Cost-benefit analysis relative to transcript accuracy
+- Quality assurance measures based on transcript representation
 
 ---
+
+**ORIGINAL TRANSCRIPT (SOURCE OF TRUTH):**
+{{ original_transcript }}
 
 **PREDICTED EXTRACTION:**
 {{ predicted_extraction }}
@@ -624,11 +693,13 @@ You are performing a cost-effective single standard evaluation for high-relevanc
 {% endif %}
 
 Please:
-1. Perform thorough evaluation against primary standard
-2. Assess standard relevance and potential biases
-3. Provide detailed confidence assessment
-4. Include efficiency metrics and quality analysis
-5. Explain reasoning for single standard approach
+1. Perform thorough evaluation against transcript, using standard only for structure
+2. Assess standard relevance and potential biases relative to transcript
+3. Provide detailed confidence assessment based on transcript accuracy
+4. Include efficiency metrics and quality analysis based on transcript representation
+5. Explain reasoning for single standard approach based on transcript accuracy
+
+**REMEMBER**: Evaluate based on transcript accuracy, using the standard only as a structural guide.
 
 {{ ctx.output_format }}
 "#
