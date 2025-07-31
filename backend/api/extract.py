@@ -324,17 +324,54 @@ async def extract_medical_actions(
         
         performance_monitor.end_operation("baml_extraction")
         
-        # Convert extraction to dict format for evaluation
+        # POST-PROCESSING REFINEMENT STEP
+        print("=== Starting Post-Processing Refinement ===")
+        performance_monitor.start_operation("refinement_phase")
+        
+        # Determine initial confidence level for refinement decision
+        # This is a simple heuristic - in practice, you might want more sophisticated logic
+        total_items = (
+            len(extraction_result.follow_up_tasks) + 
+            len(extraction_result.medication_instructions) + 
+            len(extraction_result.client_reminders) + 
+            len(extraction_result.clinician_todos)
+        )
+        
+        # Simple confidence heuristic based on extraction completeness
+        if total_items >= 5:
+            initial_confidence = "high"
+        elif total_items >= 2:
+            initial_confidence = "medium"
+        else:
+            initial_confidence = "low"
+        
+        print(f"Initial confidence level: {initial_confidence} (based on {total_items} extracted items)")
+        
+        # Apply refinement based on confidence level
+        # For now, we'll refine all extractions, but you could make this conditional
+        refined_extraction = b.RefineMedicalExtraction(
+            original_extraction=extraction_result,
+            transcript=request.transcript_text,
+            confidence_level=initial_confidence,
+            notes=request.notes or None,
+            previous_visits=previous_visits_context if previous_visits_context else None,
+            sops=relevant_sops if relevant_sops else None
+        )
+        
+        print("✓ Post-processing refinement completed")
+        performance_monitor.end_operation("refinement_phase")
+        
+        # Convert refined extraction to dict format for evaluation
         extraction_data = {
-            "follow_up_tasks": [task.model_dump() for task in extraction_result.follow_up_tasks],
-            "medication_instructions": [med.model_dump() for med in extraction_result.medication_instructions],
-            "client_reminders": [reminder.model_dump() for reminder in extraction_result.client_reminders],
-            "clinician_todos": [todo.model_dump() for todo in extraction_result.clinician_todos]
+            "follow_up_tasks": [task.model_dump() for task in refined_extraction.follow_up_tasks],
+            "medication_instructions": [med.model_dump() for med in refined_extraction.medication_instructions],
+            "client_reminders": [reminder.model_dump() for reminder in refined_extraction.client_reminders],
+            "clinician_todos": [todo.model_dump() for todo in refined_extraction.clinician_todos]
         }
         
         # Add custom extractions if present - keep as list for evaluation
-        if extraction_result.custom_extractions:
-            extraction_data["custom_extractions"] = [custom_extraction.model_dump() for custom_extraction in extraction_result.custom_extractions]
+        if refined_extraction.custom_extractions:
+            extraction_data["custom_extractions"] = [custom_extraction.model_dump() for custom_extraction in refined_extraction.custom_extractions]
         
         # TRANSCRIPT-FIRST EVALUATION STEP
         print("=== Starting Transcript-First Evaluation ===")

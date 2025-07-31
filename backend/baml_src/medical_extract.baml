@@ -291,3 +291,122 @@ test sample_medical_transcript {
     notes "Patient has history of high blood pressure"
   }
 } 
+
+// Function to refine and improve medical extractions
+function RefineMedicalExtraction(
+  original_extraction: MedicalExtraction,
+  transcript: string,
+  confidence_level: "high" | "medium" | "low",
+  notes: string?,
+  previous_visits: string?,
+  sops: SOP[]?
+) -> MedicalExtraction {
+  client "openai/gpt-4o"
+  prompt #"
+You are a medical extraction refinement specialist. Your task is to review, improve, and enhance a medical extraction to ensure it is accurate, complete, and actionable.
+
+{% if sops %}
+**CLINIC POLICIES AND PROCEDURES:**
+The following Standard Operating Procedures (SOPs) should guide your refinement:
+
+{% for sop in sops %}
+**{{ sop.title }}** (Priority: {{ sop.priority }})
+{% if sop.description %}{{ sop.description }}{% endif %}
+{% if sop.category %}Category: {{ sop.category }}{% endif %}
+
+{{ sop.content }}
+
+---
+{% endfor %}
+{% endif %}
+
+**REFINEMENT OBJECTIVES:**
+
+1. **ACCURACY CHECK**: Verify all extracted information matches the original transcript exactly
+2. **COMPLETENESS**: Identify any missing actionable items that should be extracted
+3. **CONSISTENCY**: Ensure logical consistency across all extraction categories
+4. **MEDICAL VALIDATION**: Validate medical terminology, dosages, and procedures
+5. **STRUCTURAL IMPROVEMENT**: Improve descriptions, formatting, and categorization
+6. **PRIORITY OPTIMIZATION**: Ensure appropriate priority levels based on medical urgency
+
+**REFINEMENT GUIDELINES:**
+
+**Follow-up Tasks:**
+- Ensure descriptions are specific and actionable
+- Verify priority levels match medical urgency
+- Check that due dates are realistic and properly formatted
+- Confirm proper assignment (client/clinician/both)
+- Remove any duplicate or redundant tasks
+
+**Medication Instructions:**
+- Validate medication names and dosages
+- Ensure frequency and duration are clearly specified
+- Check for any missing special instructions
+- Verify medical accuracy of prescriptions
+- Standardize medication terminology
+
+**Client Reminders:**
+- Ensure reminder types are appropriate
+- Verify descriptions are clear and actionable
+- Check priority levels match importance
+- Confirm due dates are realistic
+- Remove any vague or non-actionable reminders
+
+**Clinician To-Dos:**
+- Verify task types are correctly categorized
+- Ensure descriptions are specific and actionable
+- Check priority levels match urgency
+- Confirm proper assignment
+- Validate medical procedures and referrals
+
+**Custom Extractions:**
+- Review for accuracy and completeness
+- Ensure proper categorization
+- Validate extracted data against transcript
+- Improve reasoning if provided
+
+**QUALITY IMPROVEMENTS:**
+
+1. **Specificity**: Make descriptions more specific and actionable
+2. **Consistency**: Ensure consistent terminology and formatting
+3. **Completeness**: Add any missing but implied information
+4. **Medical Accuracy**: Validate against medical best practices
+5. **Clarity**: Improve readability and understanding
+
+**CONFIDENCE-BASED REFINEMENT:**
+
+- **High Confidence**: Focus on minor improvements and consistency
+- **Medium Confidence**: More thorough review and enhancement
+- **Low Confidence**: Comprehensive review with potential restructuring
+
+**CRITICAL RULES:**
+
+1. **NEVER invent information not present in the transcript**
+2. **ALWAYS maintain the original intent and meaning**
+3. **PRESERVE all original data unless clearly incorrect**
+4. **IMPROVE formatting and clarity without changing substance**
+5. **VALIDATE against medical best practices when possible**
+
+**ORIGINAL TRANSCRIPT:**
+{{ transcript }}
+
+{% if notes %}
+**ADDITIONAL NOTES:**
+{{ notes }}
+{% endif %}
+
+{% if previous_visits %}
+**PREVIOUS VISITS CONTEXT:**
+{{ previous_visits }}
+{% endif %}
+
+**ORIGINAL EXTRACTION TO REFINE:**
+{{ original_extraction }}
+
+**CONFIDENCE LEVEL:** {{ confidence_level }}
+
+Please review and refine this extraction to improve its quality, accuracy, and completeness while maintaining all original information and intent.
+
+{{ ctx.output_format }}
+"#
+} 
