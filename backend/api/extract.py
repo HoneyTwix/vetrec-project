@@ -383,17 +383,6 @@ async def extract_medical_actions(
             # Search for both test case transcripts and user's own previous transcripts
             similar_transcripts = []
             
-            # First, search test case transcripts (user_id 999) with reranking
-            print("Searching test case transcripts with reranking...")
-            test_case_transcripts = embedding_service.find_similar_transcripts_with_reranker(
-                request.transcript_text,
-                999,  # Test cases
-                10,
-                0.3,  # Very low threshold to catch exact matches
-                use_reranker=True
-            )
-            similar_transcripts.extend(test_case_transcripts)
-            
             # Then, search user's own previous transcripts if user_id is provided
             user_transcripts = []
             if request.user_id and request.user_id != 999:
@@ -408,19 +397,12 @@ async def extract_medical_actions(
                 similar_transcripts.extend(user_transcripts)
                 print(f"Found {len(user_transcripts)} similar user transcripts")
             
-            print(f"Total similar transcripts found: {len(similar_transcripts)} (test cases: {len(test_case_transcripts)}, user: {len(user_transcripts) if request.user_id and request.user_id != 999 else 0})")
+            print(f"Total similar transcripts found: {len(similar_transcripts)} (user: {len(user_transcripts) if request.user_id and request.user_id != 999 else 0})")
             
             # If no similar transcripts found, try with even lower thresholds
             if not similar_transcripts:
                 print("⚠️ No similar transcripts found with threshold 0.3 - trying even lower thresholds")
                 
-                # Try lower threshold for test cases
-                test_case_transcripts = embedding_service.find_similar_transcripts(
-                    request.transcript_text,
-                    999,  # Test cases
-                    15,  # Get more candidates
-                    0.1
-                )
                 
                 # Try lower threshold for user transcripts
                 user_transcripts = []
@@ -432,18 +414,10 @@ async def extract_medical_actions(
                         0.1
                     )
                 
-                similar_transcripts = test_case_transcripts + user_transcripts
+                similar_transcripts = user_transcripts
                 
                 if not similar_transcripts:
                     print("⚠️ Still no similar transcripts - trying minimum threshold")
-                    
-                    # Try minimum threshold for test cases
-                    test_case_transcripts = embedding_service.find_similar_transcripts(
-                        request.transcript_text,
-                        999,  # Test cases
-                        20,  # Get even more candidates
-                        0.05
-                    )
                     
                     # Try minimum threshold for user transcripts
                     user_transcripts = []
@@ -455,7 +429,7 @@ async def extract_medical_actions(
                             0.05
                         )
                     
-                    similar_transcripts = test_case_transcripts + user_transcripts
+                    similar_transcripts = user_transcripts
             
             print(f"Found {len(similar_transcripts)} similar transcripts")
             
@@ -520,11 +494,11 @@ async def extract_medical_actions(
                 
                 # Step 2: Select evaluation strategy based on transcript similarity
                 if best_similarity >= 0.8:
-                    # High similarity - use single standard evaluation
+                    # High similarity - use single standard evaluation with granular confidence
                     strategy_type = "single"
                     num_standards = 1
                     selected_standards = [available_standards[0]]
-                    print(f"✓ High transcript similarity ({best_similarity:.3f}) - using single standard evaluation")
+                    print(f"✓ High transcript similarity ({best_similarity:.3f}) - using single standard evaluation with granular confidence")
                 elif best_similarity >= 0.6:
                     # Medium similarity - use few standards evaluation
                     strategy_type = "few"
@@ -538,10 +512,10 @@ async def extract_medical_actions(
                     selected_standards = available_standards[:num_standards]
                     print(f"✓ Low transcript similarity ({best_similarity:.3f}) - using {num_standards} standards")
                 
-                # Step 3: Evaluate using the selected strategy
+                # Step 3: Evaluate using the selected strategy with enhanced granular confidence
                 if strategy_type == "single":
-                    # Single standard evaluation
-                    evaluation_result = b.EvaluateWithSingleStandard(
+                    # Single standard evaluation with granular confidence
+                    enhanced_evaluation_result = b.EvaluateWithSingleStandard(
                         predicted_extraction=extraction_data,
                         primary_standard=selected_standards[0],
                         original_transcript=request.transcript_text
@@ -552,14 +526,13 @@ async def extract_medical_actions(
                         "num_standards": 1,
                         "best_similarity": best_similarity,
                         "search_method": "transcript_first",
-                        "evaluation": evaluation_result.evaluation,
-                        "efficiency_metrics": evaluation_result.efficiency_metrics,
-                        "quality_assessment": evaluation_result.quality_assessment
+                        "evaluation": enhanced_evaluation_result.evaluation,
+                        "confidence_details": enhanced_evaluation_result.confidence_details
                     }
                     
                 else:
-                    # Multiple standards evaluation
-                    evaluation_result = b.EvaluateWithMultipleStandards(
+                    # Multiple standards evaluation with granular confidence
+                    enhanced_evaluation_result = b.EvaluateWithMultipleStandards(
                         predicted_extraction=extraction_data,
                         selected_standards=selected_standards,
                         original_transcript=request.transcript_text,
@@ -571,9 +544,8 @@ async def extract_medical_actions(
                         "num_standards": len(selected_standards),
                         "best_similarity": best_similarity,
                         "search_method": "transcript_first",
-                        "aggregated_result": evaluation_result.aggregated_result,
-                        "evaluation_insights": evaluation_result.evaluation_insights,
-                        "cost_metrics": evaluation_result.cost_metrics
+                        "evaluation": enhanced_evaluation_result.evaluation,
+                        "confidence_details": enhanced_evaluation_result.confidence_details
                     }
                 
                 print(f"✓ Transcript-first evaluation completed successfully")
@@ -703,6 +675,82 @@ async def extract_medical_actions(
                             "efficiency_score": evaluation_summary["cost_metrics"].efficiency_score
                         }
                 
+                # Handle confidence details for enhanced evaluation
+                confidence_details_dict = None
+                if "confidence_details" in evaluation_summary:
+                    confidence_details = evaluation_summary["confidence_details"]
+                    confidence_details_dict = {
+                        "overall_confidence": confidence_details.overall_confidence,
+                        "flagged_sections": {
+                            "follow_up_tasks": confidence_details.flagged_sections.follow_up_tasks,
+                            "medication_instructions": confidence_details.flagged_sections.medication_instructions,
+                            "client_reminders": confidence_details.flagged_sections.client_reminders,
+                            "clinician_todos": confidence_details.flagged_sections.clinician_todos,
+                            "custom_extractions": confidence_details.flagged_sections.custom_extractions
+                        },
+                        "confidence_summary": confidence_details.confidence_summary,
+                        "item_confidence": {
+                            "follow_up_tasks": [
+                                {
+                                    "description": item.description,
+                                    "priority": item.priority,
+                                    "due_date": item.due_date,
+                                    "assigned_to": item.assigned_to,
+                                    "confidence": {
+                                        "confidence": item.confidence.confidence,
+                                        "reasoning": item.confidence.reasoning,
+                                        "issues": item.confidence.issues,
+                                        "suggestions": item.confidence.suggestions
+                                    }
+                                } for item in confidence_details.item_confidence.follow_up_tasks
+                            ],
+                            "medication_instructions": [
+                                {
+                                    "medication_name": item.medication_name,
+                                    "dosage": item.dosage,
+                                    "frequency": item.frequency,
+                                    "duration": item.duration,
+                                    "special_instructions": item.special_instructions,
+                                    "confidence": {
+                                        "confidence": item.confidence.confidence,
+                                        "reasoning": item.confidence.reasoning,
+                                        "issues": item.confidence.issues,
+                                        "suggestions": item.confidence.suggestions
+                                    }
+                                } for item in confidence_details.item_confidence.medication_instructions
+                            ],
+                            "client_reminders": [
+                                {
+                                    "reminder_type": item.reminder_type,
+                                    "description": item.description,
+                                    "due_date": item.due_date,
+                                    "priority": item.priority,
+                                    "confidence": {
+                                        "confidence": item.confidence.confidence,
+                                        "reasoning": item.confidence.reasoning,
+                                        "issues": item.confidence.issues,
+                                        "suggestions": item.confidence.suggestions
+                                    }
+                                } for item in confidence_details.item_confidence.client_reminders
+                            ],
+                            "clinician_todos": [
+                                {
+                                    "task_type": item.task_type,
+                                    "description": item.description,
+                                    "priority": item.priority,
+                                    "assigned_to": item.assigned_to,
+                                    "due_date": item.due_date,
+                                    "confidence": {
+                                        "confidence": item.confidence.confidence,
+                                        "reasoning": item.confidence.reasoning,
+                                        "issues": item.confidence.issues,
+                                        "suggestions": item.confidence.suggestions
+                                    }
+                                } for item in confidence_details.item_confidence.clinician_todos
+                            ]
+                        }
+                    }
+                
                 extraction_data["evaluation_results"] = evaluation_summary_dict
                 
                 # CONFIDENCE-BASED DECISION SYSTEM
@@ -713,9 +761,9 @@ async def extract_medical_actions(
                 print(f"Confidence Level: {confidence_level}")
                 
                 if confidence_level == "high":
-                    print(f"✓ High confidence - proceeding with automatic save")
-                    should_save = True
-                    review_required = False
+                    print(f"✓ High confidence - flagging for user review (not auto-saving)")
+                    should_save = False
+                    review_required = True
                 else:
                     print(f"⚠️ {confidence_level.capitalize()} confidence - flagging for human review")
                     should_save = False
@@ -829,8 +877,8 @@ async def extract_medical_actions(
         # Return response based on confidence level
         confidence_level = extraction_data.get("confidence_level", "low")
         print(f"Confidence Level Flagging Response: {confidence_level}")
-        # Flag for review if confidence is medium, low, or no_evaluation
-        flagged = confidence_level in ["medium", "low", "no_evaluation"]
+        # Flag for review if review_required is True (which now includes high confidence)
+        flagged = review_required
         extraction_data["flagged"] = flagged
         
         # Print performance summary
@@ -855,7 +903,8 @@ async def extract_medical_actions(
                         "flagged": flagged
                     },
                     confidence_level=confidence_level,
-                    flagged=flagged
+                    flagged=flagged,
+                    confidence_details=confidence_details_dict
                 )
             except Exception as e:
                 print(f"Error creating response: {e}")
@@ -876,7 +925,8 @@ async def extract_medical_actions(
                         "flagged": flagged
                     },
                     confidence_level=confidence_level,
-                    flagged=flagged
+                    flagged=flagged,
+                    confidence_details=confidence_details_dict
                 )
         elif confidence_level == "no_evaluation":
             # Convert custom_extractions back to dict format for response
@@ -910,7 +960,8 @@ async def extract_medical_actions(
                 "review_required": True,  # Set to True for no_evaluation cases
                 "evaluation_results": response_extraction_data.get("evaluation_results", {}),
                 "flagged": True,  # Always flag no_evaluation cases for review
-                "message": "Extraction completed but no evaluation possible due to lack of similar test cases. Please review and save manually."
+                "message": "Extraction completed but no evaluation possible due to lack of similar test cases. Please review and save manually.",
+                "confidence_details": confidence_details_dict
             }
             return no_eval_response
         else:
@@ -945,7 +996,8 @@ async def extract_medical_actions(
                 "review_required": True,
                 "evaluation_results": response_extraction_data.get("evaluation_results", {}),
                 "flagged": flagged,
-                "message": f"Extraction flagged for human review due to {confidence_level} confidence level"
+                "message": f"Extraction flagged for human review due to {confidence_level} confidence level",
+                "confidence_details": confidence_details_dict
             }
             return review_response
         

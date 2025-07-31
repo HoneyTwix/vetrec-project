@@ -100,6 +100,26 @@ class ExtractionResultResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Enhanced confidence models
+class ItemConfidenceResponse(BaseModel):
+    confidence: str  # "high" | "medium" | "low"
+    reasoning: str
+    issues: Optional[List[str]] = None
+    suggestions: Optional[List[str]] = None
+
+class FlaggedSectionsResponse(BaseModel):
+    follow_up_tasks: List[int] = []  # Indexes of flagged items
+    medication_instructions: List[int] = []
+    client_reminders: List[int] = []
+    clinician_todos: List[int] = []
+    custom_extractions: Optional[List[int]] = None
+
+class ConfidenceDetailsResponse(BaseModel):
+    overall_confidence: str  # "high" | "medium" | "low"
+    flagged_sections: FlaggedSectionsResponse
+    confidence_summary: str
+    item_confidence: Optional[Dict[str, Any]] = None  # Detailed confidence for each item
+
 class ExtractionResponse(BaseModel):
     transcript: VisitTranscriptResponse
     extraction: ExtractionResultResponse
@@ -108,6 +128,8 @@ class ExtractionResponse(BaseModel):
     review_required: Optional[bool] = None
     evaluation_results: Optional[Dict[str, Any]] = None
     message: Optional[str] = None
+    # Enhanced confidence fields
+    confidence_details: Optional[ConfidenceDetailsResponse] = None
 
 class ReviewResponse(BaseModel):
     transcript: VisitTranscriptResponse

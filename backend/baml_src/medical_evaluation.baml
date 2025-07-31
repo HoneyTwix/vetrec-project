@@ -24,6 +24,83 @@ class EvaluationResult {
   confidence_level "high" | "medium" | "low"
 }
 
+// Enhanced confidence types for granular item-level confidence
+class ItemConfidence {
+  confidence "high" | "medium" | "low"
+  reasoning string
+  issues string[]?
+  suggestions string[]?
+}
+
+class FollowUpTaskWithConfidence {
+  description string
+  priority "high" | "medium" | "low"
+  due_date string?
+  assigned_to "client" | "clinician" | "both"?
+  confidence ItemConfidence
+}
+
+class MedicationInstructionWithConfidence {
+  medication_name string
+  dosage string
+  frequency string
+  duration string
+  special_instructions string?
+  confidence ItemConfidence
+}
+
+class ClientReminderWithConfidence {
+  reminder_type "appointment" | "medication" | "test" | "lifestyle" | "other"
+  description string
+  due_date string?
+  priority "high" | "medium" | "low"
+  confidence ItemConfidence
+}
+
+class ClinicianTodoWithConfidence {
+  task_type "follow_up" | "referral" | "test_order" | "documentation" | "billing" | "other"
+  description string
+  priority "high" | "medium" | "low"
+  assigned_to string?
+  due_date string?
+  confidence ItemConfidence
+}
+
+class CustomExtractionWithConfidence {
+  category_name string
+  extracted_data string
+  confidence ItemConfidence
+  reasoning string?
+}
+
+class MedicalExtractionWithConfidence {
+  follow_up_tasks FollowUpTaskWithConfidence[]
+  medication_instructions MedicationInstructionWithConfidence[]
+  client_reminders ClientReminderWithConfidence[]
+  clinician_todos ClinicianTodoWithConfidence[]
+  custom_extractions CustomExtractionWithConfidence[]?
+}
+
+class FlaggedSections {
+  follow_up_tasks int[]  // Indexes of low/medium confidence items
+  medication_instructions int[]
+  client_reminders int[]
+  clinician_todos int[]
+  custom_extractions int[]?
+}
+
+class ConfidenceDetails {
+  overall_confidence "high" | "medium" | "low"
+  item_confidence MedicalExtractionWithConfidence
+  flagged_sections FlaggedSections
+  confidence_summary string
+}
+
+class EnhancedEvaluationResult {
+  evaluation EvaluationResult
+  confidence_details ConfidenceDetails
+}
+
 // Function to evaluate medical extraction quality
 function EvaluateMedicalExtraction(
   predicted_extraction: MedicalExtraction,
@@ -568,10 +645,10 @@ function EvaluateWithMultipleStandards(
   selected_standards: GoldStandardCase[],
   original_transcript: string,
   aggregation_method: "weighted" | "average" | "robust"
-) -> MultiStandardResult {
+) -> EnhancedEvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are evaluating medical extraction quality against multiple gold standards and aggregating results, with the ORIGINAL TRANSCRIPT as the source of truth.
+You are evaluating medical extraction quality against multiple gold standards with granular confidence assessment and aggregating results, with the ORIGINAL TRANSCRIPT as the source of truth.
 
 **CRITICAL PRINCIPLE:**
 The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates for formatting and categorization.
@@ -581,12 +658,98 @@ The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structur
 - average: Simple arithmetic mean of all evaluations against transcript
 - robust: Mean with outlier detection and removal based on transcript accuracy
 
+**GRANULAR CONFIDENCE ASSESSMENT:**
+
+**High Confidence Indicators:**
+- Clear, explicit mention in transcript
+- Specific details (dates, dosages, names) match transcript exactly
+- No ambiguity in interpretation
+- Consistent with medical context
+- Complete information available
+
+**Medium Confidence Indicators:**
+- Implied or inferred information from transcript
+- Some ambiguity in interpretation
+- Missing specific details but core information present
+- Potential transcription errors
+- Unclear assignment of responsibility
+
+**Low Confidence Indicators:**
+- Vague or unclear information in transcript
+- Significant ambiguity or multiple interpretations possible
+- Missing critical details
+- Potential transcription errors affecting meaning
+- Inferred information not clearly supported by transcript
+- Unclear medical context or terminology
+
+**ITEM-SPECIFIC EVALUATION CRITERIA:**
+
+**Follow-up Tasks:**
+- Description accuracy vs transcript
+- Priority level justification from transcript
+- Due date accuracy and format
+- Assignment accuracy (client/clinician/both)
+- Completeness of task details
+
+**Medication Instructions:**
+- Medication name accuracy
+- Dosage precision and units
+- Frequency clarity and accuracy
+- Duration specification
+- Special instructions completeness
+
+**Client Reminders:**
+- Reminder type appropriateness
+- Description accuracy and clarity
+- Due date accuracy
+- Priority level justification
+- Actionability of reminder
+
+**Clinician To-Dos:**
+- Task type categorization accuracy
+- Description specificity and clarity
+- Priority level justification
+- Assignment accuracy
+- Due date accuracy
+
+**Custom Extractions:**
+- Category appropriateness
+- Data extraction accuracy
+- Completeness of information
+- Relevance to transcript content
+
+**FLAGGED SECTIONS IDENTIFICATION:**
+Flag items for human review if they have:
+- Low confidence scores
+- Medium confidence with specific issues
+- Ambiguous or unclear information
+- Potential transcription errors
+- Missing critical details
+- Inconsistent or contradictory information
+
+**ISSUE IDENTIFICATION:**
+For each flagged item, identify specific issues:
+- Missing information
+- Ambiguous language
+- Potential transcription errors
+- Inconsistent details
+- Unclear assignments
+- Vague descriptions
+
+**SUGGESTIONS:**
+Provide actionable suggestions for improving flagged items:
+- Request clarification of ambiguous terms
+- Suggest specific details to verify
+- Recommend alternative interpretations
+- Propose additional information needed
+
 **Evaluation Process:**
 1. Evaluate extraction against each selected standard, prioritizing transcript accuracy
 2. Calculate individual scores and reasoning based on transcript representation
 3. Aggregate results using specified method, weighted toward transcript accuracy
 4. Detect and handle outliers based on transcript accuracy
 5. Assess consistency across evaluations relative to transcript
+6. Provide granular confidence assessment for each individual item
 
 **Consistency Assessment (based on transcript accuracy):**
 - High: All scores within 0.2 range when evaluated against transcript
@@ -612,14 +775,14 @@ The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structur
 **AGGREGATION METHOD:**
 {{ aggregation_method }}
 
-Please:
-1. Evaluate against each selected standard, prioritizing transcript accuracy
-2. Aggregate results using specified method, weighted toward transcript accuracy
-3. Assess consistency and detect outliers based on transcript accuracy
-4. Provide detailed insights and cost metrics based on transcript representation
-5. Explain aggregation reasoning and confidence based on transcript accuracy
+Please provide:
+1. Standard evaluation with overall scores and reasoning
+2. Granular confidence assessment for each individual item
+3. Specific issues and suggestions for flagged items
+4. Flagged sections with indexes of items requiring review
+5. Overall confidence summary and recommendations
 
-**REMEMBER**: The transcript is the source of truth. Gold standards are only structural guides.
+**REMEMBER**: Evaluate each item individually against the transcript, not the gold standards.
 
 {{ ctx.output_format }}
 "#
@@ -650,10 +813,10 @@ function EvaluateWithSingleStandard(
   primary_standard: GoldStandardCase,
   original_transcript: string,
   evaluation_context: string?
-) -> SingleStandardResult {
+) -> EnhancedEvaluationResult {
   client "openai/gpt-4o"
   prompt #"
-You are performing a cost-effective single standard evaluation for high-relevance cases, with the ORIGINAL TRANSCRIPT as the source of truth.
+You are performing a cost-effective single standard evaluation with granular confidence assessment for high-relevance cases, with the ORIGINAL TRANSCRIPT as the source of truth.
 
 **CRITICAL PRINCIPLE:**
 The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structural templates.
@@ -663,6 +826,91 @@ The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structur
 - Focus on detailed, thorough evaluation against transcript
 - Consider potential biases of single standard structure
 - Provide confidence in evaluation reliability based on transcript accuracy
+
+**GRANULAR CONFIDENCE ASSESSMENT:**
+
+**High Confidence Indicators:**
+- Clear, explicit mention in transcript
+- Specific details (dates, dosages, names) match transcript exactly
+- No ambiguity in interpretation
+- Consistent with medical context
+- Complete information available
+
+**Medium Confidence Indicators:**
+- Implied or inferred information from transcript
+- Some ambiguity in interpretation
+- Missing specific details but core information present
+- Potential transcription errors
+- Unclear assignment of responsibility
+
+**Low Confidence Indicators:**
+- Vague or unclear information in transcript
+- Significant ambiguity or multiple interpretations possible
+- Missing critical details
+- Potential transcription errors affecting meaning
+- Inferred information not clearly supported by transcript
+- Unclear medical context or terminology
+
+**ITEM-SPECIFIC EVALUATION CRITERIA:**
+
+**Follow-up Tasks:**
+- Description accuracy vs transcript
+- Priority level justification from transcript
+- Due date accuracy and format
+- Assignment accuracy (client/clinician/both)
+- Completeness of task details
+
+**Medication Instructions:**
+- Medication name accuracy
+- Dosage precision and units
+- Frequency clarity and accuracy
+- Duration specification
+- Special instructions completeness
+
+**Client Reminders:**
+- Reminder type appropriateness
+- Description accuracy and clarity
+- Due date accuracy
+- Priority level justification
+- Actionability of reminder
+
+**Clinician To-Dos:**
+- Task type categorization accuracy
+- Description specificity and clarity
+- Priority level justification
+- Assignment accuracy
+- Due date accuracy
+
+**Custom Extractions:**
+- Category appropriateness
+- Data extraction accuracy
+- Completeness of information
+- Relevance to transcript content
+
+**FLAGGED SECTIONS IDENTIFICATION:**
+Flag items for human review if they have:
+- Low confidence scores
+- Medium confidence with specific issues
+- Ambiguous or unclear information
+- Potential transcription errors
+- Missing critical details
+- Inconsistent or contradictory information
+
+**ISSUE IDENTIFICATION:**
+For each flagged item, identify specific issues:
+- Missing information
+- Ambiguous language
+- Potential transcription errors
+- Inconsistent details
+- Unclear assignments
+- Vague descriptions
+
+**SUGGESTIONS:**
+Provide actionable suggestions for improving flagged items:
+- Request clarification of ambiguous terms
+- Suggest specific details to verify
+- Recommend alternative interpretations
+- Propose additional information needed
 
 **Evaluation Quality (based on transcript accuracy):**
 - Assess completeness of extraction relative to transcript
@@ -692,15 +940,17 @@ The ORIGINAL TRANSCRIPT is the SOURCE OF TRUTH. Gold standards are only structur
 {{ evaluation_context }}
 {% endif %}
 
-Please:
-1. Perform thorough evaluation against transcript, using standard only for structure
-2. Assess standard relevance and potential biases relative to transcript
-3. Provide detailed confidence assessment based on transcript accuracy
-4. Include efficiency metrics and quality analysis based on transcript representation
-5. Explain reasoning for single standard approach based on transcript accuracy
+Please provide:
+1. Standard evaluation with overall scores and reasoning
+2. Granular confidence assessment for each individual item
+3. Specific issues and suggestions for flagged items
+4. Flagged sections with indexes of items requiring review
+5. Overall confidence summary and recommendations
 
-**REMEMBER**: Evaluate based on transcript accuracy, using the standard only as a structural guide.
+**REMEMBER**: Evaluate each item individually against the transcript, not the gold standard.
 
 {{ ctx.output_format }}
 "#
 } 
+
+ 

@@ -50,6 +50,10 @@ def migrate_database():
             print("Adding updated_at column to extraction_results table...")
             cursor.execute("ALTER TABLE extraction_results ADD COLUMN updated_at DATETIME")
         
+        if 'confidence_details' not in columns:
+            print("Adding confidence_details column to extraction_results table...")
+            cursor.execute("ALTER TABLE extraction_results ADD COLUMN confidence_details TEXT")
+        
         # Check if tags column exists in sops table
         cursor.execute("PRAGMA table_info(sops)")
         columns = [column[1] for column in cursor.fetchall()]

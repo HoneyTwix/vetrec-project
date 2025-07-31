@@ -9,8 +9,82 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { extractWithCustomCategories, saveFlaggedResponse, uploadTranscriptPDF, type ExtractRequest, type ExtractionResponse, type CustomCategory, type FlaggedResponseRequest, type UserInfo } from '@/lib/api';
-import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit, History } from 'lucide-react';
+import { FileText, Loader2, Download, AlertCircle, CheckCircle, Plus, X, Settings, Flag, Save, Eye, BookOpen, Upload, Edit, History, AlertTriangle, Info } from 'lucide-react';
 import SOPManager from './SOPManager';
+
+// Confidence indicator component
+const ConfidenceIndicator = ({ confidence, reasoning, issues, suggestions }: {
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string;
+  issues?: string[];
+  suggestions?: string[];
+}) => {
+  const getConfidenceColor = (conf: string) => {
+    switch (conf) {
+      case 'high': return 'text-green-600 bg-green-50 border-green-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low': return 'text-red-600 bg-red-50 border-red-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
+
+  const getConfidenceIcon = (conf: string) => {
+    switch (conf) {
+      case 'high': return <CheckCircle className="w-4 h-4" />;
+      case 'medium': return <AlertTriangle className="w-4 h-4" />;
+      case 'low': return <AlertCircle className="w-4 h-4" />;
+      default: return <Info className="w-4 h-4" />;
+    }
+  };
+
+  return (
+    <div className="mt-2">
+      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getConfidenceColor(confidence)}`}>
+        {getConfidenceIcon(confidence)}
+        {confidence.charAt(0).toUpperCase() + confidence.slice(1)} Confidence
+      </div>
+      <div className="mt-1 text-xs text-gray-600">
+        <p className="font-medium">Reasoning:</p>
+        <p>{reasoning}</p>
+        {issues && issues.length > 0 && (
+          <div className="mt-1">
+            <p className="font-medium text-red-600">Issues:</p>
+            <ul className="list-disc list-inside">
+              {issues.map((issue, idx) => (
+                <li key={idx}>{issue}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {suggestions && suggestions.length > 0 && (
+          <div className="mt-1">
+            <p className="font-medium text-blue-600">Suggestions:</p>
+            <ul className="list-disc list-inside">
+              {suggestions.map((suggestion, idx) => (
+                <li key={idx}>{suggestion}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Flagged item wrapper component
+const FlaggedItem = ({ isFlagged, children }: { isFlagged: boolean; children: React.ReactNode }) => {
+  if (!isFlagged) return <>{children}</>;
+  
+  return (
+    <div className="border-2 border-red-200 bg-red-50 p-3 rounded-lg">
+      <div className="flex items-center gap-2 mb-2">
+        <Flag className="w-4 h-4 text-red-600" />
+        <span className="text-sm font-medium text-red-700">Flagged for Review</span>
+      </div>
+      {children}
+    </div>
+  );
+};
 
 export default function TranscriptExtractor() {
   const { user } = useUser();
@@ -772,13 +846,30 @@ export default function TranscriptExtractor() {
                   <h4 className="font-semibold text-slate-800 mb-2">Follow-up Tasks</h4>
                   <div className="space-y-2">
                     {flaggedData.extraction.follow_up_tasks.length > 0 ? (
-                      flaggedData.extraction.follow_up_tasks.map((task, index) => (
-                        <div key={index} className="text-sm p-2 bg-slate-50 rounded">
-                          <p className="font-medium">{task.description}</p>
-                          <p className="text-slate-600">Priority: {task.priority}</p>
-                          {task.due_date && <p className="text-slate-600">Due: {task.due_date}</p>}
-                        </div>
-                      ))
+                      <>
+                        {flaggedData.extraction.follow_up_tasks.map((task, index) => {
+                          const isFlagged = flaggedData.confidence_details?.flagged_sections?.follow_up_tasks?.includes(index) ?? false;
+                          const confidenceInfo = flaggedData.confidence_details?.item_confidence?.follow_up_tasks?.[index]?.confidence;
+                          
+                          return (
+                            <FlaggedItem key={index} isFlagged={isFlagged}>
+                              <div className="text-sm p-2 bg-slate-50 rounded">
+                                <p className="font-medium">{task.description}</p>
+                                <p className="text-slate-600">Priority: {task.priority}</p>
+                                {task.due_date && <p className="text-slate-600">Due: {task.due_date}</p>}
+                                {confidenceInfo && (
+                                  <ConfidenceIndicator
+                                    confidence={confidenceInfo.confidence}
+                                    reasoning={confidenceInfo.reasoning}
+                                    issues={confidenceInfo.issues}
+                                    suggestions={confidenceInfo.suggestions}
+                                  />
+                                )}
+                              </div>
+                            </FlaggedItem>
+                          );
+                        })}
+                      </>
                     ) : (
                       <p className="text-slate-500 text-sm">No follow-up tasks found</p>
                     )}
@@ -789,13 +880,30 @@ export default function TranscriptExtractor() {
                   <h4 className="font-semibold text-slate-800 mb-2">Medications</h4>
                   <div className="space-y-2">
                     {flaggedData.extraction.medication_instructions.length > 0 ? (
-                      flaggedData.extraction.medication_instructions.map((med, index) => (
-                        <div key={index} className="text-sm p-2 bg-slate-50 rounded">
-                          <p className="font-medium">{med.medication_name}</p>
-                          <p className="text-slate-600">{med.dosage} - {med.frequency}</p>
-                          <p className="text-slate-600">Duration: {med.duration}</p>
-                        </div>
-                      ))
+                      <>
+                        {flaggedData.extraction.medication_instructions.map((med, index) => {
+                          const isFlagged = flaggedData.confidence_details?.flagged_sections?.medication_instructions?.includes(index) ?? false;
+                          const confidenceInfo = flaggedData.confidence_details?.item_confidence?.medication_instructions?.[index]?.confidence;
+                          
+                          return (
+                            <FlaggedItem key={index} isFlagged={isFlagged}>
+                              <div className="text-sm p-2 bg-slate-50 rounded">
+                                <p className="font-medium">{med.medication_name}</p>
+                                <p className="text-slate-600">{med.dosage} - {med.frequency}</p>
+                                <p className="text-slate-600">Duration: {med.duration}</p>
+                                {confidenceInfo && (
+                                  <ConfidenceIndicator
+                                    confidence={confidenceInfo.confidence}
+                                    reasoning={confidenceInfo.reasoning}
+                                    issues={confidenceInfo.issues}
+                                    suggestions={confidenceInfo.suggestions}
+                                  />
+                                )}
+                              </div>
+                            </FlaggedItem>
+                          );
+                        })}
+                      </>
                     ) : (
                       <p className="text-slate-500 text-sm">No medications found</p>
                     )}
@@ -808,13 +916,30 @@ export default function TranscriptExtractor() {
                   <h4 className="font-semibold text-slate-800 mb-2">Client Reminders</h4>
                   <div className="space-y-2">
                     {flaggedData.extraction.client_reminders.length > 0 ? (
-                      flaggedData.extraction.client_reminders.map((reminder, index) => (
-                        <div key={index} className="text-sm p-2 bg-slate-50 rounded">
-                          <p className="font-medium">{reminder.description}</p>
-                          <p className="text-slate-600">Type: {reminder.reminder_type}</p>
-                          <p className="text-slate-600">Priority: {reminder.priority}</p>
-                        </div>
-                      ))
+                      <>
+                        {flaggedData.extraction.client_reminders.map((reminder, index) => {
+                          const isFlagged = flaggedData.confidence_details?.flagged_sections?.client_reminders?.includes(index) ?? false;
+                          const confidenceInfo = flaggedData.confidence_details?.item_confidence?.client_reminders?.[index]?.confidence;
+                          
+                          return (
+                            <FlaggedItem key={index} isFlagged={isFlagged}>
+                              <div className="text-sm p-2 bg-slate-50 rounded">
+                                <p className="font-medium">{reminder.description}</p>
+                                <p className="text-slate-600">Type: {reminder.reminder_type}</p>
+                                <p className="text-slate-600">Priority: {reminder.priority}</p>
+                                {confidenceInfo && (
+                                  <ConfidenceIndicator
+                                    confidence={confidenceInfo.confidence}
+                                    reasoning={confidenceInfo.reasoning}
+                                    issues={confidenceInfo.issues}
+                                    suggestions={confidenceInfo.suggestions}
+                                  />
+                                )}
+                              </div>
+                            </FlaggedItem>
+                          );
+                        })}
+                      </>
                     ) : (
                       <p className="text-slate-500 text-sm">No client reminders found</p>
                     )}
@@ -825,13 +950,30 @@ export default function TranscriptExtractor() {
                   <h4 className="font-semibold text-slate-800 mb-2">Clinician Tasks</h4>
                   <div className="space-y-2">
                     {flaggedData.extraction.clinician_todos.length > 0 ? (
-                      flaggedData.extraction.clinician_todos.map((todo, index) => (
-                        <div key={index} className="text-sm p-2 bg-slate-50 rounded">
-                          <p className="font-medium">{todo.description}</p>
-                          <p className="text-slate-600">Type: {todo.task_type}</p>
-                          <p className="text-slate-600">Priority: {todo.priority}</p>
-                        </div>
-                      ))
+                      <>
+                        {flaggedData.extraction.clinician_todos.map((todo, index) => {
+                          const isFlagged = flaggedData.confidence_details?.flagged_sections?.clinician_todos?.includes(index) ?? false;
+                          const confidenceInfo = flaggedData.confidence_details?.item_confidence?.clinician_todos?.[index]?.confidence;
+                          
+                          return (
+                            <FlaggedItem key={index} isFlagged={isFlagged}>
+                              <div className="text-sm p-2 bg-slate-50 rounded">
+                                <p className="font-medium">{todo.description}</p>
+                                <p className="text-slate-600">Type: {todo.task_type}</p>
+                                <p className="text-slate-600">Priority: {todo.priority}</p>
+                                {confidenceInfo && (
+                                  <ConfidenceIndicator
+                                    confidence={confidenceInfo.confidence}
+                                    reasoning={confidenceInfo.reasoning}
+                                    issues={confidenceInfo.issues}
+                                    suggestions={confidenceInfo.suggestions}
+                                  />
+                                )}
+                              </div>
+                            </FlaggedItem>
+                          );
+                        })}
+                      </>
                     ) : (
                       <p className="text-slate-500 text-sm">No clinician tasks found</p>
                     )}
@@ -939,63 +1081,79 @@ export default function TranscriptExtractor() {
                 </Button>
               </div>
               <div className="space-y-3">
-                {editableExtraction.follow_up_tasks.map((task, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Description</Label>
-                        <Input
-                          value={task.description}
-                          onChange={(e) => updateFollowUpTask(index, 'description', e.target.value)}
-                          placeholder="Task description"
-                        />
+                {editableExtraction.follow_up_tasks.map((task, index) => {
+                  const confidenceInfo = flaggedData?.confidence_details?.item_confidence?.follow_up_tasks?.[index]?.confidence;
+                  
+                  return (
+                    <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
+                      {/* Confidence Indicator */}
+                      {confidenceInfo && (
+                        <div className="mb-2">
+                          <ConfidenceIndicator
+                            confidence={confidenceInfo.confidence}
+                            reasoning={confidenceInfo.reasoning}
+                            issues={confidenceInfo.issues}
+                            suggestions={confidenceInfo.suggestions}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Description</Label>
+                          <Input
+                            value={task.description}
+                            onChange={(e) => updateFollowUpTask(index, 'description', e.target.value)}
+                            placeholder="Task description"
+                          />
+                        </div>
+                        <div>
+                          <Label>Priority</Label>
+                          <select
+                            value={task.priority}
+                            onChange={(e) => updateFollowUpTask(index, 'priority', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <Label>Priority</Label>
-                        <select
-                          value={task.priority}
-                          onChange={(e) => updateFollowUpTask(index, 'priority', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="high">High</option>
-                          <option value="medium">Medium</option>
-                          <option value="low">Low</option>
-                        </select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Due Date</Label>
+                          <Input
+                            value={task.due_date ?? ''}
+                            onChange={(e) => updateFollowUpTask(index, 'due_date', e.target.value)}
+                            placeholder="e.g., in 2 weeks"
+                          />
+                        </div>
+                        <div>
+                          <Label>Assigned To</Label>
+                          <select
+                            value={task.assigned_to ?? 'clinician'}
+                            onChange={(e) => updateFollowUpTask(index, 'assigned_to', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="clinician">Clinician</option>
+                            <option value="client">Client</option>
+                          </select>
+                        </div>
                       </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem('follow_up_tasks', index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove Task
+                      </Button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Due Date</Label>
-                        <Input
-                          value={task.due_date ?? ''}
-                          onChange={(e) => updateFollowUpTask(index, 'due_date', e.target.value)}
-                          placeholder="e.g., in 2 weeks"
-                        />
-                      </div>
-                      <div>
-                        <Label>Assigned To</Label>
-                        <select
-                          value={task.assigned_to ?? 'clinician'}
-                          onChange={(e) => updateFollowUpTask(index, 'assigned_to', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="clinician">Clinician</option>
-                          <option value="client">Client</option>
-                        </select>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem('follow_up_tasks', index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Remove Task
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -1009,64 +1167,80 @@ export default function TranscriptExtractor() {
                 </Button>
               </div>
               <div className="space-y-3">
-                {editableExtraction.medication_instructions.map((med, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <Label>Medication Name</Label>
-                        <Input
-                          value={med.medication_name}
-                          onChange={(e) => updateMedication(index, 'medication_name', e.target.value)}
-                          placeholder="e.g., lisinopril"
-                        />
+                {editableExtraction.medication_instructions.map((med, index) => {
+                  const confidenceInfo = flaggedData?.confidence_details?.item_confidence?.medication_instructions?.[index]?.confidence;
+                  
+                  return (
+                    <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
+                      {/* Confidence Indicator */}
+                      {confidenceInfo && (
+                        <div className="mb-2">
+                          <ConfidenceIndicator
+                            confidence={confidenceInfo.confidence}
+                            reasoning={confidenceInfo.reasoning}
+                            issues={confidenceInfo.issues}
+                            suggestions={confidenceInfo.suggestions}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <Label>Medication Name</Label>
+                          <Input
+                            value={med.medication_name}
+                            onChange={(e) => updateMedication(index, 'medication_name', e.target.value)}
+                            placeholder="e.g., lisinopril"
+                          />
+                        </div>
+                        <div>
+                          <Label>Dosage</Label>
+                          <Input
+                            value={med.dosage}
+                            onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
+                            placeholder="e.g., 10mg"
+                          />
+                        </div>
+                        <div>
+                          <Label>Frequency</Label>
+                          <Input
+                            value={med.frequency}
+                            onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
+                            placeholder="e.g., once daily"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label>Dosage</Label>
-                        <Input
-                          value={med.dosage}
-                          onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
-                          placeholder="e.g., 10mg"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Duration</Label>
+                          <Input
+                            value={med.duration ?? ''}
+                            onChange={(e) => updateMedication(index, 'duration', e.target.value)}
+                            placeholder="e.g., 30 days"
+                          />
+                        </div>
+                        <div>
+                          <Label>Special Instructions</Label>
+                          <Input
+                            value={med.special_instructions ?? ''}
+                            onChange={(e) => updateMedication(index, 'special_instructions', e.target.value)}
+                            placeholder="e.g., take with food"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label>Frequency</Label>
-                        <Input
-                          value={med.frequency}
-                          onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
-                          placeholder="e.g., once daily"
-                        />
-                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem('medication_instructions', index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove Medication
+                      </Button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Duration</Label>
-                        <Input
-                          value={med.duration ?? ''}
-                          onChange={(e) => updateMedication(index, 'duration', e.target.value)}
-                          placeholder="e.g., 30 days"
-                        />
-                      </div>
-                      <div>
-                        <Label>Special Instructions</Label>
-                        <Input
-                          value={med.special_instructions ?? ''}
-                          onChange={(e) => updateMedication(index, 'special_instructions', e.target.value)}
-                          placeholder="e.g., take with food"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem('medication_instructions', index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Remove Medication
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -1080,65 +1254,81 @@ export default function TranscriptExtractor() {
                 </Button>
               </div>
               <div className="space-y-3">
-                {editableExtraction.client_reminders.map((reminder, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Description</Label>
-                        <Input
-                          value={reminder.description}
-                          onChange={(e) => updateClientReminder(index, 'description', e.target.value)}
-                          placeholder="Reminder description"
-                        />
+                {editableExtraction.client_reminders.map((reminder, index) => {
+                  const confidenceInfo = flaggedData?.confidence_details?.item_confidence?.client_reminders?.[index]?.confidence;
+                  
+                  return (
+                    <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
+                      {/* Confidence Indicator */}
+                      {confidenceInfo && (
+                        <div className="mb-2">
+                          <ConfidenceIndicator
+                            confidence={confidenceInfo.confidence}
+                            reasoning={confidenceInfo.reasoning}
+                            issues={confidenceInfo.issues}
+                            suggestions={confidenceInfo.suggestions}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Description</Label>
+                          <Input
+                            value={reminder.description}
+                            onChange={(e) => updateClientReminder(index, 'description', e.target.value)}
+                            placeholder="Reminder description"
+                          />
+                        </div>
+                        <div>
+                          <Label>Reminder Type</Label>
+                          <select
+                            value={reminder.reminder_type}
+                            onChange={(e) => updateClientReminder(index, 'reminder_type', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="appointment">Appointment</option>
+                            <option value="medication">Medication</option>
+                            <option value="test">Test</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <Label>Reminder Type</Label>
-                        <select
-                          value={reminder.reminder_type}
-                          onChange={(e) => updateClientReminder(index, 'reminder_type', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="appointment">Appointment</option>
-                          <option value="medication">Medication</option>
-                          <option value="test">Test</option>
-                          <option value="other">Other</option>
-                        </select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Priority</Label>
+                          <select
+                            value={reminder.priority ?? 'medium'}
+                            onChange={(e) => updateClientReminder(index, 'priority', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Due Date</Label>
+                          <Input
+                            value={reminder.due_date ?? ''}
+                            onChange={(e) => updateClientReminder(index, 'due_date', e.target.value)}
+                            placeholder="e.g., in 2 weeks"
+                          />
+                        </div>
                       </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem('client_reminders', index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove Reminder
+                      </Button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Priority</Label>
-                        <select
-                          value={reminder.priority ?? 'medium'}
-                          onChange={(e) => updateClientReminder(index, 'priority', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="high">High</option>
-                          <option value="medium">Medium</option>
-                          <option value="low">Low</option>
-                        </select>
-                      </div>
-                      <div>
-                        <Label>Due Date</Label>
-                        <Input
-                          value={reminder.due_date ?? ''}
-                          onChange={(e) => updateClientReminder(index, 'due_date', e.target.value)}
-                          placeholder="e.g., in 2 weeks"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem('client_reminders', index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Remove Reminder
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -1152,65 +1342,81 @@ export default function TranscriptExtractor() {
                 </Button>
               </div>
               <div className="space-y-3">
-                {editableExtraction.clinician_todos.map((todo, index) => (
-                  <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Description</Label>
-                        <Input
-                          value={todo.description}
-                          onChange={(e) => updateClinicianTodo(index, 'description', e.target.value)}
-                          placeholder="Task description"
-                        />
+                {editableExtraction.clinician_todos.map((todo, index) => {
+                  const confidenceInfo = flaggedData?.confidence_details?.item_confidence?.clinician_todos?.[index]?.confidence;
+                  
+                  return (
+                    <div key={index} className="p-4 bg-white rounded-lg border space-y-3">
+                      {/* Confidence Indicator */}
+                      {confidenceInfo && (
+                        <div className="mb-2">
+                          <ConfidenceIndicator
+                            confidence={confidenceInfo.confidence}
+                            reasoning={confidenceInfo.reasoning}
+                            issues={confidenceInfo.issues}
+                            suggestions={confidenceInfo.suggestions}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Description</Label>
+                          <Input
+                            value={todo.description}
+                            onChange={(e) => updateClinicianTodo(index, 'description', e.target.value)}
+                            placeholder="Task description"
+                          />
+                        </div>
+                        <div>
+                          <Label>Task Type</Label>
+                          <select
+                            value={todo.task_type}
+                            onChange={(e) => updateClinicianTodo(index, 'task_type', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="follow_up">Follow-up</option>
+                            <option value="referral">Referral</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <Label>Task Type</Label>
-                        <select
-                          value={todo.task_type}
-                          onChange={(e) => updateClinicianTodo(index, 'task_type', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="follow_up">Follow-up</option>
-                          <option value="referral">Referral</option>
-                          <option value="documentation">Documentation</option>
-                          <option value="other">Other</option>
-                        </select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label>Priority</Label>
+                          <select
+                            value={todo.priority ?? 'medium'}
+                            onChange={(e) => updateClinicianTodo(index, 'priority', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                          >
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Due Date</Label>
+                          <Input
+                            value={todo.due_date ?? ''}
+                            onChange={(e) => updateClinicianTodo(index, 'due_date', e.target.value)}
+                            placeholder="e.g., in 2 weeks"
+                          />
+                        </div>
                       </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem('clinician_todos', index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove Task
+                      </Button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <Label>Priority</Label>
-                        <select
-                          value={todo.priority ?? 'medium'}
-                          onChange={(e) => updateClinicianTodo(index, 'priority', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md"
-                        >
-                          <option value="high">High</option>
-                          <option value="medium">Medium</option>
-                          <option value="low">Low</option>
-                        </select>
-                      </div>
-                      <div>
-                        <Label>Due Date</Label>
-                        <Input
-                          value={todo.due_date ?? ''}
-                          onChange={(e) => updateClinicianTodo(index, 'due_date', e.target.value)}
-                          placeholder="e.g., in 2 weeks"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem('clinician_todos', index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Remove Task
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

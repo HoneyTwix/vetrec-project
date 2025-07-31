@@ -59,6 +59,7 @@ class ExtractionResult(Base):
     custom_extractions = Column(JSON)
     evaluation_results = Column(JSON)
     confidence_level = Column(String, index=True)
+    confidence_details = Column(JSON)  # Store granular confidence details
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

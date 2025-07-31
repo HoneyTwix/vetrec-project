@@ -127,6 +127,61 @@ export interface ExtractionResponse {
   confidence_level?: string;
   review_required?: boolean;
   message?: string;
+  confidence_details?: ConfidenceDetails;
+}
+
+// Enhanced confidence types
+export interface ItemConfidence {
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string;
+  issues?: string[];
+  suggestions?: string[];
+}
+
+export interface FlaggedSections {
+  follow_up_tasks: number[];
+  medication_instructions: number[];
+  client_reminders: number[];
+  clinician_todos: number[];
+  custom_extractions?: number[];
+}
+
+export interface ConfidenceDetails {
+  overall_confidence: 'high' | 'medium' | 'low';
+  flagged_sections: FlaggedSections;
+  confidence_summary: string;
+  item_confidence?: {
+    follow_up_tasks?: Array<{
+      description: string;
+      priority: string;
+      due_date?: string;
+      assigned_to?: string;
+      confidence: ItemConfidence;
+    }>;
+    medication_instructions?: Array<{
+      medication_name: string;
+      dosage: string;
+      frequency: string;
+      duration?: string;
+      special_instructions?: string;
+      confidence: ItemConfidence;
+    }>;
+    client_reminders?: Array<{
+      reminder_type: string;
+      description: string;
+      due_date?: string;
+      priority: string;
+      confidence: ItemConfidence;
+    }>;
+    clinician_todos?: Array<{
+      task_type: string;
+      description: string;
+      priority: string;
+      assigned_to?: string;
+      due_date?: string;
+      confidence: ItemConfidence;
+    }>;
+  };
 }
 
 // API Functions
